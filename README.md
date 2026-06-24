@@ -15,5 +15,12 @@ https://github.com/Klerith/fernando-skills
 npx skills@latest add Klerith/fernando-skills
 ```
 
-## Hola Mund
+## Commands
+
+```bash
+npm run dev    # Start dev server
+npm run build  # Production build
+npm run lint   # ESLint (flat config, eslint.config.mjs)
+npm start      # Start production server
+```
 
