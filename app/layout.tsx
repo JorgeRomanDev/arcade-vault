@@ -28,9 +28,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${pressStart2P.variable} ${jetBrainsMono.variable} h-full`}
+      className={`${pressStart2P.variable} ${jetBrainsMono.variable}`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body>
+        <div className="av-bg" />
+        <div className="av-noise" />
+        <div id="root">{children}</div>
+      </body>
     </html>
   );
 }
