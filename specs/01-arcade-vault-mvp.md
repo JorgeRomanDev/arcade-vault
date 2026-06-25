@@ -1,7 +1,7 @@
 ---
 spec: 01
 title: Arcade Vault MVP — Pantallas visuales
-state: Aprobado
+state: Implementado
 date: 2026-06-24
 depends_on: []
 objective: Implementar las cinco pantallas visuales de Arcade Vault (Biblioteca, Detalle, Reproductor, Auth, Salón de la Fama) y el Nav como rutas Next.js 16 App Router, portando el CSS del template sin modificar, sin juegos reales.
