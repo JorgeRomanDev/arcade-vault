@@ -15,108 +15,63 @@ interface NavProps {
   onSignOut: () => void;
 }
 
-const LINKS = [
-  { label: 'BIBLIOTECA', name: 'library' },
-  { label: 'SALÓN DE LA FAMA', name: 'hall' },
-];
-
 export default function Nav({ route, navigate, user, onSignOut }: NavProps) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  function closeDrawer() {
-    setDrawerOpen(false);
-  }
+  const isActive = (name: string) =>
+    route.name === name ||
+    (name === 'biblioteca' && route.name === 'detalle') ||
+    (name === 'biblioteca' && route.name === 'player');
+
+  const go = (r: Route) => { setOpen(false); navigate(r); };
 
   return (
     <>
       <nav className="av-nav">
-        <div className="logo" onClick={() => navigate({ name: 'library' })}>
+        <div className="logo" onClick={() => go({ name: 'biblioteca' })}>
           <div className="logo-mark" />
-          <span className="logo-text neon-cyan">ARCADE VAULT</span>
+          <div className="logo-text neon-cyan">
+            ARCADE <span className="neon-magenta">VAULT</span>
+          </div>
         </div>
 
         <div className="links">
-          {LINKS.map((l) => (
-            <a
-              key={l.name}
-              className={route.name === l.name ? 'active' : ''}
-              onClick={() => navigate({ name: l.name })}
-            >
-              {l.label}
-            </a>
-          ))}
+          <a className={isActive('biblioteca') ? 'active' : ''} onClick={() => go({ name: 'biblioteca' })}>
+            Biblioteca
+          </a>
+          <a className={isActive('salon') ? 'active' : ''} onClick={() => go({ name: 'salon' })}>
+            Salón de la Fama
+          </a>
         </div>
 
         <div className="spacer" />
 
         <div className="coin-counter">
-          <div className="coin" />
-          <span>CRÉDITOS: 03</span>
+          <span className="coin" />
+          <span>CRÉDITOS · 03</span>
         </div>
 
-        <div className="auth-btn">
-          {user ? (
-            <button className="btn ghost" onClick={onSignOut}>
-              {user.name} ▸ SALIR
-            </button>
-          ) : (
-            <button className="btn" onClick={() => navigate({ name: 'auth' })}>
-              INICIAR SESIÓN
-            </button>
-          )}
-        </div>
+        {user ? (
+          <button className="btn ghost auth-btn" onClick={onSignOut}>{user.name} ▾</button>
+        ) : (
+          <button className="btn auth-btn" onClick={() => go({ name: 'auth' })}>Iniciar Sesión</button>
+        )}
 
-        <button
-          className="btn ghost hamburger"
-          onClick={() => setDrawerOpen(true)}
-          aria-label="Abrir menú"
-        >
-          ☰
-        </button>
+        <button className="btn ghost hamburger" onClick={() => setOpen(true)} aria-label="Menú">≡</button>
       </nav>
 
-      <div
-        className={`av-mobile-backdrop${drawerOpen ? ' open' : ''}`}
-        onClick={closeDrawer}
-      />
+      <div className={`av-mobile-backdrop${open ? ' open' : ''}`} onClick={() => setOpen(false)} />
 
-      <div className={`av-mobile-panel${drawerOpen ? ' open' : ''}`}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
-          <button className="btn ghost" onClick={closeDrawer} aria-label="Cerrar menú">
-            ✕
-          </button>
-        </div>
-
-        {LINKS.map((l) => (
-          <a
-            key={l.name}
-            className={route.name === l.name ? 'active' : ''}
-            onClick={() => { navigate({ name: l.name }); closeDrawer(); }}
-          >
-            {l.label}
-          </a>
-        ))}
-
-        <div style={{ marginTop: 'auto', paddingTop: 24 }}>
-          {user ? (
-            <button
-              className="btn ghost"
-              style={{ width: '100%' }}
-              onClick={() => { onSignOut(); closeDrawer(); }}
-            >
-              {user.name} ▸ SALIR
-            </button>
-          ) : (
-            <button
-              className="btn"
-              style={{ width: '100%' }}
-              onClick={() => { navigate({ name: 'auth' }); closeDrawer(); }}
-            >
-              INICIAR SESIÓN
-            </button>
-          )}
-        </div>
-      </div>
+      <aside className={`av-mobile-panel${open ? ' open' : ''}`}>
+        <div className="pixel neon-cyan" style={{ fontSize: 11, marginBottom: 16 }}>MENÚ</div>
+        <a className={isActive('biblioteca') ? 'active' : ''} onClick={() => go({ name: 'biblioteca' })}>Biblioteca</a>
+        <a className={isActive('salon') ? 'active' : ''} onClick={() => go({ name: 'salon' })}>Salón de la Fama</a>
+        <a className={isActive('auth') ? 'active' : ''} onClick={() => go({ name: 'auth' })}>
+          {user ? 'Cuenta' : 'Iniciar Sesión'}
+        </a>
+        <div style={{ flex: 1 }} />
+        <div className="pixel" style={{ fontSize: 9, color: 'var(--ink-faint)', letterSpacing: '0.16em' }}>CRÉDITOS · 03</div>
+      </aside>
     </>
   );
 }

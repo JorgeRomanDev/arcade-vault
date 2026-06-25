@@ -10,84 +10,68 @@ interface AuthProps {
 }
 
 export default function Auth({ navigate, onLogin }: AuthProps) {
-  const [tab, setTab] = useState<'login' | 'register'>('login');
-  const [name, setName] = useState('');
+  const [tab, setTab] = useState<'in' | 'up'>('in');
+  const [user, setUser] = useState('');
+  const [pass, setPass] = useState('');
   const [email, setEmail] = useState('');
 
-  function handleSubmit(e: React.FormEvent) {
+  function submit(e: React.FormEvent) {
     e.preventDefault();
-    const trimmed = name.trim().toUpperCase().slice(0, 10);
-    if (!trimmed) return;
-    const user: User = { name: trimmed };
-    try { localStorage.setItem('av_user', JSON.stringify(user)); } catch { /* ignore */ }
-    onLogin(user);
-    navigate({ name: 'library' });
+    onLogin({ name: (user || 'PLAYER1').toUpperCase().slice(0, 10) });
+    navigate({ name: 'biblioteca' });
   }
 
   return (
-    <main className="av-main av-auth-wrap">
+    <div className="av-auth-wrap fade-in">
       <div className="auth-card">
         <div className="auth-header">
           <div className="mark" />
-          <h2 className="pixel neon-cyan">ARCADE VAULT</h2>
+          <h2 className="neon-cyan">ARCADE VAULT</h2>
+          <div className="mono" style={{ fontSize: 11, color: 'var(--ink-faint)', letterSpacing: '0.16em', marginTop: 6 }}>
+            ACCESO AL SISTEMA · v2.6
+          </div>
         </div>
 
         <div className="auth-tabs">
-          <button
-            className={tab === 'login' ? 'on' : ''}
-            onClick={() => setTab('login')}
-          >
-            INICIAR SESIÓN
-          </button>
-          <button
-            className={tab === 'register' ? 'on' : ''}
-            onClick={() => setTab('register')}
-          >
-            CREAR CUENTA
-          </button>
+          <button className={tab === 'in' ? 'on' : ''} onClick={() => setTab('in')}>INICIAR SESIÓN</button>
+          <button className={tab === 'up' ? 'on' : ''} onClick={() => setTab('up')}>CREAR CUENTA</button>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={submit}>
           <div className="field">
-            <label>NOMBRE DE JUGADOR</label>
-            <input
-              type="text"
-              placeholder="MAX 10 CHARS"
-              maxLength={10}
-              value={name}
-              onChange={(e) => setName(e.target.value.toUpperCase())}
-              autoFocus
-            />
+            <label>Usuario</label>
+            <input value={user} onChange={(e) => setUser(e.target.value)} placeholder="px_kai" />
           </div>
-
-          {tab === 'register' && (
+          {tab === 'up' && (
             <div className="field slide-in">
-              <label>EMAIL</label>
-              <input
-                type="email"
-                placeholder="player@arcade.io"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              <label>Correo electrónico</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jugador@vault.gg" />
             </div>
           )}
-
-          <button
-            type="submit"
-            className="btn pulse"
-            style={{ width: '100%', marginTop: 8 }}
-          >
-            {tab === 'login' ? 'ENTRAR AL VAULT' : 'CREAR CUENTA'}
+          <div className="field">
+            <label>Contraseña</label>
+            <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="••••••••" />
+          </div>
+          <button className="btn lg" type="submit" style={{ width: '100%', marginTop: 8 }}>
+            {tab === 'in' ? 'ENTRAR AL VAULT' : 'CREAR Y JUGAR'}
           </button>
         </form>
 
-        <div className="auth-divider">O CONTINÚA CON</div>
+        <button className="btn ghost" style={{ width: '100%', marginTop: 10 }}
+          onClick={() => { onLogin({ name: 'INVITADO' }); navigate({ name: 'biblioteca' }); }}>
+          JUGAR COMO INVITADO
+        </button>
 
+        <div className="auth-divider">O CONTINÚA CON</div>
         <div className="social">
-          <button className="btn ghost" type="button">▸ GOOGLE</button>
-          <button className="btn ghost" type="button">▸ TWITTER</button>
+          <button className="btn ghost" type="button">◆  GOOGLE</button>
+          <button className="btn ghost" type="button">▣  GITHUB</button>
+        </div>
+
+        <div style={{ marginTop: 18, textAlign: 'center', fontSize: 11, color: 'var(--ink-faint)', letterSpacing: '0.1em' }}>
+          AL ENTRAR ACEPTAS LOS TÉRMINOS DEL SALÓN ARCADE
         </div>
       </div>
-    </main>
+    </div>
   );
 }

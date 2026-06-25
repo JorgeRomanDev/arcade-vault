@@ -23,131 +23,117 @@ export interface User {
 
 export const GAMES: Game[] = [
   {
-    id: 'brickblast',
-    title: 'BRICKBLAST',
-    short: 'Destroy the wall.',
-    long: 'A classic brick-breaking experience. Launch your ball, angle your shots, and clear every block before time runs out. Chain combos for score multipliers.',
+    id: 'bloque-buster',
+    title: 'BLOQUE BUSTER',
+    short: 'Rebota la pelota y destruye muros de neón.',
+    long: 'Pilota una nave-paleta y rebota un núcleo de plasma para pulverizar muros de bloques cromáticos. Cada nivel reorganiza la grilla en patrones imposibles. ¿Hasta dónde llegará tu racha?',
     cat: 'ARCADE',
     cover: 'cover-bricks',
     color: 'cyan',
-    best: 142800,
-    plays: '18.2K',
-  },
-  {
-    id: 'tetromino',
-    title: 'TETROMINO',
-    short: 'Stack. Clear. Survive.',
-    long: 'Falling blocks demand split-second decisions. Rotate and place pieces to clear lines. The speed increases until only the sharpest minds endure.',
-    cat: 'PUZZLE',
-    cover: 'cover-tetro',
-    color: 'magenta',
-    best: 389500,
-    plays: '31.7K',
-  },
-  {
-    id: 'serpentrix',
-    title: 'SERPENTRIX',
-    short: 'Eat. Grow. Avoid.',
-    long: 'Guide your serpent through the arena, consuming pixels to grow longer. One wrong turn and it is over. How long can you last?',
-    cat: 'ARCADE',
-    cover: 'cover-snake',
-    color: 'green',
-    best: 76400,
+    best: 28450,
     plays: '12.4K',
   },
   {
-    id: 'galaktron',
-    title: 'GALAKTRON',
-    short: 'Pac-man, reimagined.',
-    long: 'Navigate the maze, collect every dot, and evade the ghost drones. Power pellets flip the script — turn hunter into hunted for precious seconds.',
+    id: 'caida',
+    title: 'CAÍDA',
+    short: 'Encaja las piezas antes de que el techo te aplaste.',
+    long: 'Piezas geométricas descienden desde la oscuridad. Rótalas, encástralas y limpia líneas para sobrevivir. La velocidad aumenta sin piedad cada 10 líneas.',
     cat: 'PUZZLE',
-    cover: 'cover-glot',
-    color: 'yellow',
-    best: 215300,
-    plays: '9.8K',
+    cover: 'cover-tetro',
+    color: 'magenta',
+    best: 184220,
+    plays: '31.8K',
   },
   {
-    id: 'spaceraid',
-    title: 'SPACE RAID',
-    short: 'Defend the frontier.',
-    long: 'Waves of alien formations descend. Your laser cannon is the last line of defense. Take cover, conserve ammo, and never let them reach the bottom.',
+    id: 'serpentina',
+    title: 'SERPENTINA',
+    short: 'Crece sin morder tu propia cola.',
+    long: 'Una serpiente de luz recorre la grilla buscando núcleos magenta. Cada bocado la alarga y la hace más veloz. Un movimiento en falso y se devora a sí misma.',
+    cat: 'ARCADE',
+    cover: 'cover-snake',
+    color: 'green',
+    best: 7820,
+    plays: '9.1K',
+  },
+  {
+    id: 'gloton',
+    title: 'GLOTÓN',
+    short: 'Devora puntos y escapa de los fantasmas.',
+    long: 'Un círculo glotón patrulla un laberinto coleccionando puntos luminosos. Cuatro espectros lo persiguen, pero cada cierto tiempo aparece una píldora que invierte los papeles.',
+    cat: 'ARCADE',
+    cover: 'cover-glot',
+    color: 'yellow',
+    best: 96400,
+    plays: '27.2K',
+  },
+  {
+    id: 'invasores',
+    title: 'INVASORES',
+    short: 'Defiende el planeta de filas alienígenas.',
+    long: 'Olas de pixeles hostiles descienden formación tras formación. Mueve tu cañón en horizontal y abre fuego con precisión, antes de que toquen la superficie.',
     cat: 'SHOOTER',
     cover: 'cover-invaders',
     color: 'green',
-    best: 428900,
-    plays: '24.1K',
+    best: 54190,
+    plays: '18.0K',
   },
   {
-    id: 'asteroidbelt',
-    title: 'ASTEROID BELT',
-    short: 'Thrust. Shoot. Survive.',
-    long: 'Pilot your ship through a deadly asteroid field. Inertia is your enemy. One collision ends the run — split large rocks before they split you.',
+    id: 'rocas',
+    title: 'ROCAS',
+    short: 'Pulveriza asteroides en gravedad cero.',
+    long: 'Tu nave triangular flota en vacío absoluto. Dispara y rota para dividir rocas en fragmentos cada vez más pequeños. Cuidado con los OVNIs en el horizonte.',
     cat: 'SHOOTER',
     cover: 'cover-rocas',
-    color: 'cyan',
-    best: 198700,
+    color: 'yellow',
+    best: 41200,
     plays: '15.6K',
   },
   {
-    id: 'frogway',
-    title: 'FROGWAY',
-    short: 'Hop or get crushed.',
-    long: 'Cross the highway and the river using only timing and nerve. Logs drift, cars speed, and one mistimed jump means starting over from scratch.',
+    id: 'ranaria',
+    title: 'RANARIA',
+    short: 'Cruza la autopista de pixeles.',
+    long: 'Salta entre carriles de coches a toda velocidad y troncos a la deriva en el río. Llega a los nenúfares antes de que se acabe el tiempo.',
     cat: 'ARCADE',
     cover: 'cover-rana',
     color: 'green',
-    best: 88200,
-    plays: '7.3K',
+    best: 18900,
+    plays: '6.4K',
   },
   {
-    id: 'pixelduel',
-    title: 'PIXEL DUEL',
-    short: 'One screen. Two fighters.',
-    long: 'Face off against another player on a single screen. Master your moveset, read your opponent, and land the finishing blow before the timer runs out.',
+    id: 'duelo-pixel',
+    title: 'DUELO PIXEL',
+    short: 'Dos paletas. Una pelota. Reflejos máximos.',
+    long: 'El duelo más puro: dos paletas verticales se enfrentan por rebotar una pelota luminosa. Modo solitario contra la CPU o partida local a dos jugadores.',
     cat: 'VERSUS',
     cover: 'cover-duelo',
-    color: 'magenta',
-    best: 99999,
-    plays: '41.0K',
+    color: 'cyan',
+    best: 24,
+    plays: '4.2K',
   },
 ];
 
 export const CATS: string[] = ['TODOS', 'ARCADE', 'PUZZLE', 'SHOOTER', 'VERSUS'];
 
 export const PLAYERS: string[] = [
-  'ACE', 'BLADE', 'COBRA', 'DASH', 'ECHO',
-  'FLASH', 'GHOST', 'HAWK', 'IRON', 'JINX',
-  'KRYPT', 'LYNX', 'MAVEN', 'NOVA', 'ORBIT',
-  'PIXEL', 'QUARK', 'RYZE',
+  'PX_KAI', 'NEONFOX', 'Z3R0COOL', 'M00NRYU', 'VAULT_07', 'GLITCHA',
+  'ATARI_KID', 'CYBER_LU', 'MAGENTA88', 'SCANLINE', 'BIT_LORD', 'ARKADYA',
+  'DROID_X', 'RGB_QUEEN', 'PIXEL_DAD', 'RETROVIRA', 'VECTORX', 'JOY_STK',
 ];
 
-function lcg(seed: number): () => number {
-  let s = seed >>> 0;
-  return () => {
-    s = (Math.imul(1664525, s) + 1013904223) >>> 0;
-    return s / 0x100000000;
-  };
-}
-
-export function seededScores(seed: number, count = 10): ScoreRow[] {
-  const rng = lcg(seed);
+export function seededScores(seed: number, count = 12): ScoreRow[] {
+  let s = seed;
+  const rand = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+  const used = new Set<string>();
   const rows: ScoreRow[] = [];
-
   for (let i = 0; i < count; i++) {
-    const nameIdx = Math.floor(rng() * PLAYERS.length);
-    const suffix = String.fromCharCode(65 + Math.floor(rng() * 26));
-    const score = Math.floor(rng() * 380000) + 20000;
-    const day = String(1 + Math.floor(rng() * 28)).padStart(2, '0');
-    const month = String(1 + Math.floor(rng() * 12)).padStart(2, '0');
-    const year = 2024 + Math.floor(rng() * 2);
-
-    rows.push({
-      rank: i + 1,
-      name: `${PLAYERS[nameIdx]}.${suffix}`,
-      score,
-      date: `${day}/${month}/${year}`,
-    });
+    let name: string;
+    do { name = PLAYERS[Math.floor(rand() * PLAYERS.length)]; } while (used.has(name) && used.size < PLAYERS.length);
+    used.add(name);
+    const base = Math.floor(50000 + rand() * 250000);
+    const score = base - i * Math.floor(2000 + rand() * 4000);
+    const day = String(1 + Math.floor(rand() * 28)).padStart(2, '0');
+    const mon = String(1 + Math.floor(rand() * 12)).padStart(2, '0');
+    rows.push({ rank: i + 1, name, score: Math.max(score, 1000), date: `${day}/${mon}/2026` });
   }
-
   return rows.sort((a, b) => b.score - a.score).map((r, i) => ({ ...r, rank: i + 1 }));
 }

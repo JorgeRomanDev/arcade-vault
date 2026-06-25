@@ -2,6 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Nav from './Nav';
+import Library from './screens/Library';
+import GameDetail from './screens/GameDetail';
+import GamePlayer from './screens/GamePlayer';
+import Auth from './screens/Auth';
+import HallOfFame from './screens/HallOfFame';
 import type { User } from '@/app/data';
 
 export interface Route {
@@ -9,44 +14,63 @@ export interface Route {
   id?: string;
 }
 
+type SavedScore = { game: string; score: number; name: string; at: number };
+
 export default function AppShell() {
-  const [route, setRoute] = useState<Route>({ name: 'library' });
+  const [route, setRoute] = useState<Route>({ name: 'biblioteca' });
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem('av_user');
-    if (stored) {
-      try { setUser(JSON.parse(stored) as User); } catch { /* ignore */ }
-    }
+    try { setUser(JSON.parse(localStorage.getItem('av_user') || 'null') as User | null); } catch { /* ignore */ }
   }, []);
 
   function navigate(next: Route) {
     setRoute(next);
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
   }
 
-  function signOut() {
-    localStorage.removeItem('av_user');
+  function handleLogin(u: User) {
+    setUser(u);
+    localStorage.setItem('av_user', JSON.stringify(u));
+  }
+
+  function handleSignOut() {
     setUser(null);
-    setRoute({ name: 'library' });
+    localStorage.removeItem('av_user');
+  }
+
+  function handleSaveScore(entry: Omit<SavedScore, 'at'>) {
+    try {
+      const all: SavedScore[] = JSON.parse(localStorage.getItem('av_scores') || '[]');
+      all.push({ ...entry, at: Date.now() });
+      localStorage.setItem('av_scores', JSON.stringify(all));
+    } catch { /* ignore */ }
   }
 
   function renderScreen() {
-    // screens wired in step 10
     switch (route.name) {
+      case 'biblioteca':
+        return <Library navigate={navigate} />;
+      case 'detalle':
+        return <GameDetail id={route.id ?? ''} navigate={navigate} />;
+      case 'player':
+        return <GamePlayer id={route.id ?? ''} user={user} navigate={navigate} onSaveScore={handleSaveScore} />;
+      case 'auth':
+        return <Auth navigate={navigate} onLogin={handleLogin} />;
+      case 'salon':
+        return <HallOfFame user={user} navigate={navigate} />;
       default:
-        return (
-          <main className="av-main" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 32px' }}>
-            <p className="pixel neon-cyan" style={{ fontSize: 14 }}>CARGANDO VAULT…</p>
-          </main>
-        );
+        return <Library navigate={navigate} />;
     }
   }
 
   return (
     <>
-      <Nav route={route} navigate={navigate} user={user} onSignOut={signOut} />
-      {renderScreen()}
+      <Nav route={route} navigate={navigate} user={user} onSignOut={handleSignOut} />
+      <main className="av-main">{renderScreen()}</main>
+      <footer style={{ borderTop: '1px solid var(--line)', padding: '20px 32px', textAlign: 'center', color: 'var(--ink-faint)', fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.16em' }}>
+        © 2026 ARCADE VAULT · HECHO CON PIXELES Y NEÓN · v2.6.0
+      </footer>
     </>
   );
 }

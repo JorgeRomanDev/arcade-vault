@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { GAMES, CATS, type Game } from '@/app/data';
 import type { Route } from '@/app/components/AppShell';
 
@@ -8,47 +8,39 @@ interface LibraryProps {
   navigate: (route: Route) => void;
 }
 
-function GameCard({ game, navigate }: { game: Game; navigate: (route: Route) => void }) {
-  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const cx = rect.width / 2;
-    const cy = rect.height / 2;
-    const rotY = ((x - cx) / cx) * 9;
-    const rotX = -((y - cy) / cy) * 6;
-    e.currentTarget.style.transform =
-      `perspective(600px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateY(-6px)`;
+function GameCard({ game, onSelect }: { game: Game; onSelect: (g: Game) => void }) {
+  const tiltRef = useRef<HTMLDivElement>(null);
+
+  function onMove(e: React.MouseEvent) {
+    const el = tiltRef.current; if (!el) return;
+    const r = el.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width - 0.5;
+    const py = (e.clientY - r.top) / r.height - 0.5;
+    el.style.transform = `translateY(-6px) rotateX(${-py * 6}deg) rotateY(${px * 8}deg)`;
   }
 
-  function handleMouseLeave(e: React.MouseEvent<HTMLDivElement>) {
-    e.currentTarget.style.transform = '';
+  function onLeave() {
+    const el = tiltRef.current; if (!el) return;
+    el.style.transform = '';
   }
 
   return (
-    <div
-      className="card fade-in"
-      onClick={() => navigate({ name: 'detail', id: game.id })}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-    >
+    <div ref={tiltRef} className="card" onMouseMove={onMove} onMouseLeave={onLeave} onClick={() => onSelect(game)}>
       <div className="cover">
-        <div className={`cover-bg ${game.cover}`} />
+        <div className={'cover-bg ' + game.cover} />
         <div className="label">{game.cat}</div>
       </div>
-
       <div className="meta">
         <div className="title">{game.title}</div>
         <div className="desc">{game.short}</div>
         <div className="row">
           <div className="score-badge">
-            <span>MEJOR MARCA</span>
-            <b>{game.best.toLocaleString()}</b>
+            <span>MEJOR PUNTUACIÓN</span>
+            <b>{game.best.toLocaleString('es-ES')}</b>
           </div>
           <button
-            className={`btn ${game.color === 'magenta' ? 'magenta' : game.color === 'yellow' ? 'yellow' : ''}`}
-            style={{ fontSize: 9, padding: '8px 14px' }}
-            onClick={(e) => { e.stopPropagation(); navigate({ name: 'detail', id: game.id }); }}
+            className={'btn ' + (game.color === 'magenta' ? 'magenta' : game.color === 'yellow' ? 'yellow' : '')}
+            onClick={(e) => { e.stopPropagation(); onSelect(game); }}
           >
             JUGAR
           </button>
@@ -59,61 +51,44 @@ function GameCard({ game, navigate }: { game: Game; navigate: (route: Route) => 
 }
 
 export default function Library({ navigate }: LibraryProps) {
-  const [search, setSearch] = useState('');
-  const [activeCat, setActiveCat] = useState('TODOS');
+  const [q, setQ] = useState('');
+  const [cat, setCat] = useState('TODOS');
 
-  const filtered = GAMES.filter((g) => {
-    const matchCat = activeCat === 'TODOS' || g.cat === activeCat;
-    const matchSearch = g.title.toLowerCase().includes(search.toLowerCase());
-    return matchCat && matchSearch;
-  });
+  const filtered = useMemo(
+    () => GAMES.filter((g) => (cat === 'TODOS' || g.cat === cat) && g.title.toLowerCase().includes(q.toLowerCase())),
+    [q, cat],
+  );
 
   return (
-    <main className="av-main">
-      <div className="av-hero">
-        <h1>ARCADE VAULT</h1>
-        <p className="sub">
-          INSERT COIN TO <span className="blink">PLAY_</span>
-        </p>
-      </div>
+    <div className="fade-in">
+      <section className="av-hero">
+        <h1 className="flicker">ARCADE VAULT</h1>
+        <div className="sub">INSERTA UNA MONEDA PARA JUGAR <span className="blink">_</span></div>
+      </section>
 
       <div className="av-filters">
         <div className="av-search">
-          <span className="ico">▸</span>
-          <input
-            type="text"
-            placeholder="BUSCAR JUEGO…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <span className="ico">⌕</span>
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar un juego por nombre…" />
         </div>
         <div className="av-chips">
-          {CATS.map((cat) => (
-            <button
-              key={cat}
-              className={`chip${activeCat === cat ? ' active' : ''}`}
-              onClick={() => setActiveCat(cat)}
-            >
-              {cat}
-            </button>
+          {CATS.map((c) => (
+            <button key={c} className={'chip' + (cat === c ? ' active' : '')} onClick={() => setCat(c)}>{c}</button>
           ))}
         </div>
       </div>
 
-      {filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '64px 32px' }}>
-          <p className="pixel neon-magenta" style={{ fontSize: 12 }}>NO HAY RESULTADOS</p>
-          <p style={{ color: 'var(--ink-faint)', marginTop: 12, fontFamily: 'var(--mono)', fontSize: 13 }}>
-            Prueba con otra búsqueda o categoría
-          </p>
-        </div>
-      ) : (
-        <div className="av-grid">
-          {filtered.map((game) => (
-            <GameCard key={game.id} game={game} navigate={navigate} />
-          ))}
-        </div>
-      )}
-    </main>
+      <div className="av-grid">
+        {filtered.map((g) => (
+          <GameCard key={g.id} game={g} onSelect={(game) => navigate({ name: 'detalle', id: game.id })} />
+        ))}
+        {filtered.length === 0 && (
+          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: 80, color: 'var(--ink-faint)' }}>
+            <div className="pixel" style={{ fontSize: 14, color: 'var(--magenta)', marginBottom: 12 }}>NO HAY RESULTADOS</div>
+            <div>Intenta otra búsqueda o categoría.</div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

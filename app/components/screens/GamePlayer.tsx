@@ -1,189 +1,114 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { GAMES, type User } from '@/app/data';
 import type { Route } from '@/app/components/AppShell';
 
 interface GamePlayerProps {
   id: string;
-  navigate: (route: Route) => void;
   user: User | null;
+  navigate: (route: Route) => void;
+  onSaveScore: (entry: { game: string; score: number; name: string }) => void;
 }
 
-type SavedScore = { game: string; score: number; name: string; at: number };
-
-export default function GamePlayer({ id, navigate, user }: GamePlayerProps) {
+export default function GamePlayer({ id, user, navigate, onSaveScore }: GamePlayerProps) {
   const game = GAMES.find((g) => g.id === id);
-
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [level, setLevel] = useState(1);
   const [paused, setPaused] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
-  const [initials, setInitials] = useState(user?.name ?? '');
+  const [over, setOver] = useState(false);
+  const [name, setName] = useState(user ? user.name : 'INVITADO');
   const [saved, setSaved] = useState(false);
 
-  const scoreRef = useRef(score);
-  scoreRef.current = score;
+  useEffect(() => {
+    if (over || paused) return;
+    const t = setInterval(() => setScore((s) => s + Math.floor(10 + Math.random() * 90)), 220);
+    return () => clearInterval(t);
+  }, [over, paused]);
 
   useEffect(() => {
-    if (paused || gameOver) return;
-    const id = setInterval(() => {
-      setScore((s) => {
-        const next = s + 10;
-        setLevel(Math.floor(next / 5000) + 1);
-        return next;
-      });
-    }, 100);
-    return () => clearInterval(id);
-  }, [paused, gameOver]);
+    if (score > 0 && score % 2500 < 100) setLevel((l) => l + 1);
+  }, [score]);
 
-  function togglePause() {
-    setPaused((p) => !p);
-  }
+  function endGame() { setOver(true); }
+  function restart() { setScore(0); setLives(3); setLevel(1); setPaused(false); setOver(false); setSaved(false); }
 
-  function triggerGameOver() {
-    setGameOver(true);
-    setPaused(false);
-  }
-
-  function reset() {
-    setScore(0);
-    setLives(3);
-    setLevel(1);
-    setPaused(false);
-    setGameOver(false);
-    setSaved(false);
-    setInitials(user?.name ?? '');
-  }
-
-  function saveScore() {
-    const entry: SavedScore = {
-      game: id,
-      score: scoreRef.current,
-      name: initials.toUpperCase().slice(0, 10) || 'AAA',
-      at: Date.now(),
-    };
-    try {
-      const existing: SavedScore[] = JSON.parse(localStorage.getItem('av_scores') || '[]');
-      localStorage.setItem('av_scores', JSON.stringify([...existing, entry]));
-    } catch { /* ignore */ }
-    setSaved(true);
-  }
-
-  if (!game) {
-    return (
-      <main className="av-main" style={{ padding: '80px 32px', textAlign: 'center' }}>
-        <p className="pixel neon-magenta" style={{ fontSize: 12 }}>JUEGO NO ENCONTRADO</p>
-        <button className="btn" style={{ marginTop: 24 }} onClick={() => navigate({ name: 'library' })}>
-          ← VOLVER AL VAULT
-        </button>
-      </main>
-    );
-  }
+  if (!game) return null;
 
   return (
-    <main className="av-main">
-      <div className="av-player">
-        {/* HUD */}
-        <div className="player-hud">
-          <div className="hud-stat">
-            <span className="l">SCORE</span>
-            <span className="v">{score.toLocaleString().padStart(6, '0')}</span>
-          </div>
-          <div className="hud-stat lives">
-            <span className="l">VIDAS</span>
-            <span className="v">{'♥ '.repeat(lives).trim()}</span>
-          </div>
-          <div className="hud-stat level">
-            <span className="l">NIVEL</span>
-            <span className="v">{String(level).padStart(2, '0')}</span>
-          </div>
-          {user && (
-            <div className="hud-stat">
-              <span className="l">JUGADOR</span>
-              <span className="v" style={{ fontSize: 12 }}>{user.name}</span>
-            </div>
-          )}
-          <div className="hud-actions">
-            <button className="btn ghost" onClick={togglePause}>
-              {paused ? 'REANUDAR' : 'PAUSA'}
-            </button>
-            <button className="btn magenta" onClick={triggerGameOver}>
-              FIN
-            </button>
-            <button className="btn ghost" onClick={() => navigate({ name: 'library' })}>
-              SALIR
-            </button>
-          </div>
+    <div className="av-player fade-in">
+      <div className="player-hud">
+        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+          <div className="hud-stat"><div className="l">Jugador</div><div className="v" style={{ color: 'var(--ink)' }}>{name}</div></div>
+          <div className="hud-stat"><div className="l">Puntuación</div><div className="v">{score.toLocaleString('es-ES')}</div></div>
+          <div className="hud-stat lives"><div className="l">Vidas</div><div className="v">{'♥ '.repeat(lives).trim() || '—'}</div></div>
+          <div className="hud-stat level"><div className="l">Nivel</div><div className="v">{String(level).padStart(2, '0')}</div></div>
         </div>
-
-        {/* CRT */}
-        <div className="crt">
-          <div className="crt-screen">
-            <div className="game-arena">
-              <div className="grid-floor" />
-              <div className="player-ship" />
-              <div className="enemy e1" />
-              <div className="enemy e2" />
-              <div className="enemy e3" />
-            </div>
-
-            {paused && (
-              <div className="crt-content" style={{ background: 'rgba(0,0,0,0.65)', zIndex: 10 }}>
-                <div>
-                  <p className="pixel neon-yellow" style={{ fontSize: 18, marginBottom: 24 }}>PAUSA</p>
-                  <button className="btn lg" onClick={togglePause}>REANUDAR</button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="crt-bottom">
-            <span className="led">{game.title}</span>
-            <span>© ARCADE VAULT 2025</span>
-          </div>
+        <div className="hud-actions">
+          <button className="btn yellow" onClick={() => setPaused((p) => !p)}>{paused ? 'REANUDAR' : 'PAUSA'}</button>
+          <button className="btn magenta" onClick={endGame}>FIN</button>
+          <button className="btn ghost" onClick={() => navigate({ name: 'detalle', id: game.id })}>SALIR</button>
         </div>
       </div>
 
-      {/* Game Over Modal */}
-      {gameOver && (
+      <div className="crt">
+        <div className="crt-screen">
+          <div className="game-arena">
+            <div className="grid-floor" />
+            <div className="enemy e1" />
+            <div className="enemy e2" />
+            <div className="enemy e3" />
+            <div className="player-ship" />
+          </div>
+          {paused && (
+            <div className="crt-content" style={{ background: 'rgba(0,0,0,0.6)', zIndex: 5 }}>
+              <div>
+                <div className="pixel neon-yellow" style={{ fontSize: 22 }}>EN PAUSA</div>
+                <div className="mono" style={{ fontSize: 11, color: 'var(--ink-dim)', marginTop: 10, letterSpacing: '0.16em' }}>
+                  PULSA REANUDAR PARA CONTINUAR
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="crt-bottom">
+          <span className="led">SEÑAL OK</span>
+          <span>{game.title} · CRT-83 · 60 HZ</span>
+          <span>CARGA · 1MB</span>
+        </div>
+      </div>
+
+      {over && (
         <div className="modal-bd">
           <div className="modal">
-            <h2>GAME OVER</h2>
+            <h2>FIN DEL JUEGO</h2>
             <div className="final-label">PUNTUACIÓN FINAL</div>
-            <div className="final">{score.toLocaleString()}</div>
-
-            <div className="input-row">
-              <input
-                type="text"
-                placeholder="TUS INICIALES"
-                maxLength={10}
-                value={initials}
-                onChange={(e) => setInitials(e.target.value.toUpperCase())}
-              />
-            </div>
-
-            {saved && (
-              <div className="toast-saved">▸ PUNTUACIÓN GUARDADA_</div>
-            )}
-
-            <div className="actions">
-              {!saved && (
-                <button className="btn yellow" onClick={saveScore}>
+            <div className="final">{score.toLocaleString('es-ES')}</div>
+            {!saved ? (
+              <div className="input-row">
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value.toUpperCase().slice(0, 10))}
+                  placeholder="TUS INICIALES"
+                />
+                <button
+                  className="btn yellow"
+                  onClick={() => { onSaveScore({ game: game.id, score, name }); setSaved(true); }}
+                >
                   GUARDAR PUNTUACIÓN
                 </button>
-              )}
-              <button className="btn" onClick={reset}>
-                JUGAR DE NUEVO
-              </button>
-              <button className="btn ghost" onClick={() => navigate({ name: 'library' })}>
-                VOLVER AL VAULT
-              </button>
+              </div>
+            ) : (
+              <div className="toast-saved">▸ PUNTUACIÓN GUARDADA_</div>
+            )}
+            <div className="actions">
+              <button className="btn" onClick={restart}>JUGAR DE NUEVO</button>
+              <button className="btn magenta" onClick={() => navigate({ name: 'biblioteca' })}>VOLVER AL VAULT</button>
             </div>
           </div>
         </div>
       )}
-    </main>
+    </div>
   );
 }
