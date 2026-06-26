@@ -7,6 +7,7 @@ import GameDetail from './screens/GameDetail';
 import GamePlayer from './screens/GamePlayer';
 import Auth from './screens/Auth';
 import HallOfFame from './screens/HallOfFame';
+import Home from './screens/Home';
 import type { User } from '@/app/data';
 
 export interface Route {
@@ -17,7 +18,7 @@ export interface Route {
 type SavedScore = { game: string; score: number; name: string; at: number };
 
 export default function AppShell() {
-  const [route, setRoute] = useState<Route>({ name: 'biblioteca' });
+  const [route, setRoute] = useState<Route>({ name: 'home' });
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -49,7 +50,9 @@ export default function AppShell() {
 
   function renderScreen() {
     switch (route.name) {
-      case 'biblioteca':
+      case 'home':
+        return <Home navigate={navigate} />;
+      case 'games':
         return <Library navigate={navigate} />;
       case 'detalle':
         return <GameDetail id={route.id ?? ''} navigate={navigate} />;
@@ -60,7 +63,7 @@ export default function AppShell() {
       case 'salon':
         return <HallOfFame user={user} navigate={navigate} />;
       default:
-        return <Library navigate={navigate} />;
+        return <Home navigate={navigate} />;
     }
   }
 
