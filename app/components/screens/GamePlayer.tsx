@@ -104,7 +104,7 @@ export default function GamePlayer({ id, user, navigate, onSaveScore }: GamePlay
             )}
             <div className="actions">
               <button className="btn" onClick={restart}>JUGAR DE NUEVO</button>
-              <button className="btn magenta" onClick={() => navigate({ name: 'biblioteca' })}>VOLVER AL VAULT</button>
+              <button className="btn magenta" onClick={() => navigate({ name: 'games' })}>VOLVER AL VAULT</button>
             </div>
           </div>
         </div>

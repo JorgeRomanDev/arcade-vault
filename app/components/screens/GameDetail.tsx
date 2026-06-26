@@ -50,7 +50,7 @@ export default function GameDetail({ id, navigate }: GameDetailProps) {
           </div>
           <div className="detail-actions">
             <button className="btn xl pulse" onClick={() => navigate({ name: 'player', id: game.id })}>▶  JUGAR AHORA</button>
-            <button className="btn ghost lg" onClick={() => navigate({ name: 'biblioteca' })}>VOLVER AL VAULT</button>
+            <button className="btn ghost lg" onClick={() => navigate({ name: 'games' })}>VOLVER AL VAULT</button>
           </div>
         </div>
       </div>
