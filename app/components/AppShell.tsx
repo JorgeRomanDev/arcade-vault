@@ -8,6 +8,7 @@ import GamePlayer from './screens/GamePlayer';
 import Auth from './screens/Auth';
 import HallOfFame from './screens/HallOfFame';
 import Home from './screens/Home';
+import About from './screens/About';
 import type { User } from '@/app/data';
 
 export interface Route {
@@ -62,6 +63,8 @@ export default function AppShell() {
         return <Auth navigate={navigate} onLogin={handleLogin} />;
       case 'salon':
         return <HallOfFame user={user} navigate={navigate} />;
+      case 'about':
+        return <About navigate={navigate} />;
       default:
         return <Home navigate={navigate} />;
     }
