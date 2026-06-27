@@ -1,7 +1,7 @@
 ---
 spec: 02
 title: Arcade Vault — Home Page
-state: Aprobado
+state: Implementado
 date: 2026-06-25
 depends_on: [01-arcade-vault-mvp]
 objective: Implementar la pantalla Home como landing page inicial de Arcade Vault, portando el template references/templates/home-about/home.jsx a un componente Next.js 16 con datos reales del spec 01.
