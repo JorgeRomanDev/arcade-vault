@@ -167,10 +167,10 @@ export default function Home({ navigate }: HomeProps) {
             <button className="btn xl pulse" onClick={() => navigate({ name: 'games' })}>▶  EXPLORAR JUEGOS</button>
             <button className="btn xl magenta" onClick={() => navigate({ name: 'auth' })}>✦  CREAR CUENTA</button>
           </div>
-          <div className="hero-scroll" aria-hidden="true">
-            <span>DESLIZA</span>
-            <span className="arrow">▼</span>
-          </div>
+        </div>
+        <div className="hero-scroll" aria-hidden="true">
+          <span>DESLIZA</span>
+          <span className="arrow">▼</span>
         </div>
       </section>
 

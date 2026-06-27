@@ -42,6 +42,9 @@ export default function Nav({ route, navigate, user, onSignOut }: NavProps) {
           <a className={isActive('salon') ? 'active' : ''} onClick={() => go({ name: 'salon' })}>
             Salón de la Fama
           </a>
+          <a className={isActive('about') ? 'active' : ''} onClick={() => go({ name: 'about' })}>
+            Sobre Nosotros
+          </a>
         </div>
 
         <div className="spacer" />
@@ -66,6 +69,7 @@ export default function Nav({ route, navigate, user, onSignOut }: NavProps) {
         <div className="pixel neon-cyan" style={{ fontSize: 11, marginBottom: 16 }}>MENÚ</div>
         <a className={isActive('games') ? 'active' : ''} onClick={() => go({ name: 'games' })}>JUEGOS</a>
         <a className={isActive('salon') ? 'active' : ''} onClick={() => go({ name: 'salon' })}>Salón de la Fama</a>
+        <a className={isActive('about') ? 'active' : ''} onClick={() => go({ name: 'about' })}>Sobre Nosotros</a>
         <a className={isActive('auth') ? 'active' : ''} onClick={() => go({ name: 'auth' })}>
           {user ? 'Cuenta' : 'Iniciar Sesión'}
         </a>
