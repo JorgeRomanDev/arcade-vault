@@ -1,7 +1,7 @@
 ---
 spec: 04
 title: Arcade Vault — Instalación de Supabase
-state: Aprobado
+state: Implementado
 date: 2026-06-30
 depends_on: [01-arcade-vault-mvp]
 objective: Instalar y configurar el cliente de Supabase (browser + server) en el proyecto Next.js 16, dejando la conexión lista y verificada para que specs futuros implementen auth y datos reales.
@@ -56,14 +56,14 @@ objective: Instalar y configurar el cliente de Supabase (browser + server) en el
 
 ## Criterios de aceptación
 
-- [ ] `npm run dev` arranca sin errores TypeScript ni ESLint
-- [ ] `@supabase/supabase-js` y `@supabase/ssr` instalados y en `package.json`
-- [ ] `.env.local` existe con `NEXT_PUBLIC_SUPABASE_URL=` y `NEXT_PUBLIC_SUPABASE_ANON_KEY=` (vacías)
-- [ ] `.env.local.example` existe con las mismas claves
-- [ ] `app/lib/supabase/client.ts` exporta `createClient()` funcional para Client Components
-- [ ] `app/lib/supabase/server.ts` exporta `createClient()` funcional para Server Components/Route Handlers
-- [ ] Con claves reales puestas por el dueño, `GET /api/supabase-check` devuelve `{ ok: true }` sin error
-- [ ] Sin claves (env vars vacías), `GET /api/supabase-check` devuelve `{ error }` capturado, sin crash de la app
+- [x] `npm run dev` arranca sin errores TypeScript ni ESLint
+- [x] `@supabase/supabase-js` y `@supabase/ssr` instalados y en `package.json`
+- [x] `.env.local` existe con `NEXT_PUBLIC_SUPABASE_URL=` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=` (dueño ya colocó claves reales; nombre `PUBLISHABLE_KEY` en vez de `ANON_KEY` — variable ya existente en el proyecto)
+- [x] `.env.local.example` existe con las mismas claves
+- [x] `app/lib/supabase/client.ts` exporta `createClient()` funcional para Client Components
+- [x] `app/lib/supabase/server.ts` exporta `createClient()` funcional para Server Components/Route Handlers
+- [x] Con claves reales puestas por el dueño, `GET /api/supabase-check` devuelve `{ ok: true }` sin error
+- [x] Sin claves (env vars vacías), `GET /api/supabase-check` devuelve `{ error }` capturado, sin crash de la app
 
 ---
 
