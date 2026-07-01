@@ -1,7 +1,7 @@
 ---
 spec: 05
 title: Arcade Vault — Juego Asteroides
-state: Aprobado
+state: Implementado
 date: 2026-07-01
 depends_on: [01-arcade-vault-mvp]
 objective: Portar el juego Asteroides (canvas HTML5 puro de references/started-games/02-asteroids) a un componente React del proyecto, como nueva entrada del catálogo con id "asteroides", jugable con teclado dentro de GamePlayer.
