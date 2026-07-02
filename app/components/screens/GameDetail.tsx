@@ -21,8 +21,8 @@ export default function GameDetail({ id, navigate }: GameDetailProps) {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     (async () => {
+      setLoading(true);
       const [loadedGame, loadedScores, loadedStats] = await Promise.all([
         getGame(id),
         getTopScores(id, 10),

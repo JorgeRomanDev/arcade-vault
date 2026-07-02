@@ -27,8 +27,8 @@ export default function HallOfFame({ navigate }: HallOfFameProps) {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     (async () => {
+      setLoading(true);
       const loadedRows =
         tab === ALL_TAB
           ? await getAllTopScores(12)
