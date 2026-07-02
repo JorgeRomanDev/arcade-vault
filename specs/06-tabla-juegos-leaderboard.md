@@ -1,7 +1,7 @@
 ---
 spec: 06
 title: Arcade Vault — Tabla de juegos y leaderboard real
-state: Aprobado
+state: Implementado
 date: 2026-07-01
 depends_on: [01-arcade-vault-mvp, 04-instalacion-supabase, 05-juego-asteroides]
 objective: Crear tablas `games` y `scores` en Postgres (Supabase), sembradas con el único juego jugable (asteroides), y reemplazar los leaderboards simulados (`seededScores`) de GameDetail y HallOfFame por datos reales guardados por nombre libre, con vista global agregada y vista por juego.
