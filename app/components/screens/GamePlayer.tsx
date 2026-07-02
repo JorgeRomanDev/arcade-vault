@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { GAMES, type User } from "@/app/data";
+import type { Game, User } from "@/app/data";
+import { getGame } from "@/app/lib/games";
 import type { Route } from "@/app/components/AppShell";
 import AsteroidsGame from "@/app/components/games/AsteroidsGame";
 
@@ -9,7 +10,11 @@ interface GamePlayerProps {
   id: string;
   user: User | null;
   navigate: (route: Route) => void;
-  onSaveScore: (entry: { game: string; score: number; name: string }) => void;
+  onSaveScore: (entry: {
+    game: string;
+    score: number;
+    name: string;
+  }) => Promise<void>;
 }
 
 export default function GamePlayer({
@@ -18,7 +23,7 @@ export default function GamePlayer({
   navigate,
   onSaveScore,
 }: GamePlayerProps) {
-  const game = GAMES.find((g) => g.id === id);
+  const [game, setGame] = useState<Game | null>(null);
   const isAsteroides = id === "asteroides";
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
@@ -27,7 +32,12 @@ export default function GamePlayer({
   const [over, setOver] = useState(false);
   const [name, setName] = useState(user ? user.name : "INVITADO");
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [restartCount, setRestartCount] = useState(0);
+
+  useEffect(() => {
+    getGame(id).then(setGame);
+  }, [id]);
 
   useEffect(() => {
     if (isAsteroides || over || paused) return;
@@ -39,8 +49,10 @@ export default function GamePlayer({
   }, [isAsteroides, over, paused]);
 
   useEffect(() => {
-    if (isAsteroides) return;
-    if (score > 0 && score % 2500 < 100) setLevel((l) => l + 1);
+    (() => {
+      if (isAsteroides) return;
+      if (score > 0 && score % 2500 < 100) setLevel((l) => l + 1);
+    })();
   }, [isAsteroides, score]);
 
   function endGame() {
@@ -53,6 +65,7 @@ export default function GamePlayer({
     setPaused(false);
     setOver(false);
     setSaved(false);
+    setSaveError(null);
     setRestartCount((c) => c + 1);
   }
 
@@ -171,12 +184,24 @@ export default function GamePlayer({
                 <button
                   className="btn yellow"
                   onClick={() => {
-                    onSaveScore({ game: game.id, score, name });
-                    setSaved(true);
+                    setSaveError(null);
+                    onSaveScore({ game: game.id, score, name })
+                      .then(() => setSaved(true))
+                      .catch(() =>
+                        setSaveError("No se pudo guardar la puntuación."),
+                      );
                   }}
                 >
                   GUARDAR PUNTUACIÓN
                 </button>
+                {saveError && (
+                  <div
+                    className="toast-saved"
+                    style={{ color: "var(--magenta)" }}
+                  >
+                    ▸ {saveError}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="toast-saved">▸ PUNTUACIÓN GUARDADA_</div>
