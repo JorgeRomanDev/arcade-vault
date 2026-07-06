@@ -5,6 +5,7 @@ import type { Game, User } from "@/app/data";
 import { getGame } from "@/app/lib/games";
 import type { Route } from "@/app/components/AppShell";
 import AsteroidsGame from "@/app/components/games/AsteroidsGame";
+import TetrisGame from "@/app/components/games/TetrisGame";
 
 interface GamePlayerProps {
   id: string;
@@ -25,6 +26,8 @@ export default function GamePlayer({
 }: GamePlayerProps) {
   const [game, setGame] = useState<Game | null>(null);
   const isAsteroides = id === "asteroides";
+  const isTetris = id === "tetris";
+  const isCustomGame = isAsteroides || isTetris;
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [level, setLevel] = useState(1);
@@ -40,20 +43,20 @@ export default function GamePlayer({
   }, [id]);
 
   useEffect(() => {
-    if (isAsteroides || over || paused) return;
+    if (isCustomGame || over || paused) return;
     const t = setInterval(
       () => setScore((s) => s + Math.floor(10 + Math.random() * 90)),
       220,
     );
     return () => clearInterval(t);
-  }, [isAsteroides, over, paused]);
+  }, [isCustomGame, over, paused]);
 
   useEffect(() => {
     (() => {
-      if (isAsteroides) return;
+      if (isCustomGame) return;
       if (score > 0 && score % 2500 < 100) setLevel((l) => l + 1);
     })();
-  }, [isAsteroides, score]);
+  }, [isCustomGame, score]);
 
   function endGame() {
     setOver(true);
@@ -114,6 +117,20 @@ export default function GamePlayer({
         <div className="crt-screen">
           {isAsteroides ? (
             <AsteroidsGame
+              paused={paused}
+              restartSignal={restartCount}
+              onStateChange={(s) => {
+                setScore(s.score);
+                setLives(s.lives);
+                setLevel(s.level);
+              }}
+              onGameOver={(finalScore) => {
+                setScore(finalScore);
+                setOver(true);
+              }}
+            />
+          ) : isTetris ? (
+            <TetrisGame
               paused={paused}
               restartSignal={restartCount}
               onStateChange={(s) => {
