@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @source inline("cover-asteroides");
+@source inline("cover-tetris");
 
 /* ===== ARCADE VAULT — theme ===== */
 :root {
@@ -862,6 +863,39 @@ a {
   color: var(--magenta);
   font-size: 22px;
   text-shadow: 0 0 8px var(--magenta);
+}
+
+.cover-tetris {
+  background: radial-gradient(circle at 50% 100%, #001a2a, #0a0a18);
+}
+.cover-tetris::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+        90deg,
+        rgba(0, 245, 255, 0.08) 0 24px,
+        transparent 24px 25px
+      )
+      0 0/100% 24px,
+    repeating-linear-gradient(
+        0deg,
+        rgba(0, 245, 255, 0.08) 0 24px,
+        transparent 24px 25px
+      )
+      0 0/24px 100%;
+}
+.cover-tetris::before {
+  content: "";
+  position: absolute;
+  left: 42%;
+  top: 38%;
+  width: 48px;
+  height: 24px;
+  background: var(--cyan);
+  box-shadow: 0 24px 0 var(--cyan);
+  filter: drop-shadow(0 0 8px var(--cyan));
 }
 
 /* ===== detail screen ===== */
