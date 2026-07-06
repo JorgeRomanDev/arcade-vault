@@ -19,7 +19,6 @@ const COLORS: (string | null)[] = [
   "#e57373", // Z - red
   "#90caf9", // J - pale blue
   "#ffb74d", // L - orange
-  "#9e9e9e", // N - tuerca
 ];
 
 const PIECES: number[][][] = [
@@ -59,11 +58,6 @@ const PIECES: number[][][] = [
     [7, 7, 7],
     [0, 0, 0],
   ], // L
-  // [
-  //  [8, 8, 8],
-  //  [8, 0, 8],
-  //  [8, 8, 8],
-  //], // N (tuerca)
 ];
 
 const LINE_SCORES = [0, 100, 300, 500, 800];
@@ -94,7 +88,7 @@ function createBoard(): number[][] {
 }
 
 function randomPiece(): Piece {
-  const type = Math.floor(Math.random() * 8) + 1;
+  const type = Math.floor(Math.random() * 7) + 1;
   const shape = PIECES[type].map((row) => [...row]);
   return {
     type,
@@ -439,12 +433,27 @@ export default function TetrisGame({
   }, []);
 
   return (
-    <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 16,
+      }}
+    >
       <canvas
         ref={canvasRef}
         width={W}
         height={H}
-        style={{ maxWidth: "100%", height: "auto", display: "block" }}
+        style={{
+          maxWidth: "100%",
+          maxHeight: "100%",
+          width: "auto",
+          height: "auto",
+          display: "block",
+        }}
       />
       <canvas
         ref={nextCanvasRef}
