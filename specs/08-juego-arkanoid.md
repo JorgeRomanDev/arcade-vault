@@ -15,13 +15,13 @@ objective: Portar el juego Arkanoid (canvas HTML5 puro de references/started-gam
 - Clase CSS `.cover-arkanoid` en `app/globals.css` (gradiente púrpura oscuro → amarillo + detalle de franjas tipo bloques) + `@source inline("cover-arkanoid");`
 - Componente dedicado `app/components/games/ArkanoidGame.tsx` (`'use client'`) que porta la lógica de `game.js`: paddle, pelota con colisión AABB, 5 niveles (`LEVELS` de `levels.js`, patrones de bloques + multiplicador de velocidad ×1.0 a ×1.46), 3 vidas, 10 pts/bloque, animación de explosión (4 frames por color de bloque, usando el spritesheet original)
 - Controles: solo teclado (`←`/`→` mueven paddle) — sin mouse, sin táctil
+- Audio: `ball-bounce.mp3` (rebote en pared/paddle) y `break-sound.mp3` (bloque destruido), portados de `references/started-games/04-arkanoid/assets/sounds/`
 - `onGameOver(finalScore)` dispara tanto al perder la última vida como al completar los 5 niveles (victoria también cuenta como fin de partida)
 - Integración en `app/components/screens/GamePlayer.tsx`: cuando `id === "arkanoid"`, renderiza `<ArkanoidGame>` en vez del placeholder decorativo; se desactiva el `setInterval` de score falso para ese id
 - Guardado de puntuación vía Supabase (`scores`, `game_id: 'arkanoid'`), mismo mecanismo que asteroides/tetris
 
 ### Fuera de alcance
 
-- Sonido/efectos de audio (`ball-bounce.mp3`, `break-sound.mp3`)
 - Selector de nivel en pausa (botones 1-5, click de mouse) del overlay de pausa original
 - Control de paddle por mouse (`mousemove`)
 - Controles táctiles/móvil
@@ -85,8 +85,9 @@ interface ArkanoidGameProps {
 3. **Componente del juego — `ArkanoidGame.tsx`**
    - Crear `app/components/games/ArkanoidGame.tsx` (`'use client'`)
    - Copiar `references/started-games/04-arkanoid/assets/spritesheet-breakout.png` y `assets/spritesheet.js` a `app/components/games/assets/arkanoid/` (primer asset binario del proyecto — únicamente para este juego)
-   - Portar de `game.js` + `levels.js`: constantes (`PADDLE_SPEED`, `BLOCK_COLS/ROWS/W/H`, `BASE_BALL_VX/VY`), `initPaddle`, `initBall`, `loadLevel`, `collideAABB`, `update(dt)` (paddle por teclado, movimiento pelota, rebotes pared/paddle/bloques, explosiones, pelota perdida), `draw()` con HUD propio del canvas (score/nivel/vidas) usando `drawSprite`/`drawFrame` de `spritesheet.js`, overlays de game over y victoria
-   - Eliminar del port: listeners `mousemove`/`click` del paddle y del selector de nivel en pausa, reproducción de `bounceSound`/`breakSound`
+   - Copiar `references/started-games/04-arkanoid/assets/sounds/ball-bounce.mp3` y `break-sound.mp3` a `public/sounds/arkanoid/` (Next no soporta `import` de `.mp3` como asset de módulo; se sirven como estáticos desde `public/` y se referencian por ruta `/sounds/arkanoid/...`)
+   - Portar de `game.js` + `levels.js`: constantes (`PADDLE_SPEED`, `BLOCK_COLS/ROWS/W/H`, `BASE_BALL_VX/VY`), `initPaddle`, `initBall`, `loadLevel`, `collideAABB`, `update(dt)` (paddle por teclado, movimiento pelota, rebotes pared/paddle/bloques, explosiones, pelota perdida, reproducción de `bounceSound`/`breakSound` vía `Audio().cloneNode().play()`), `draw()` con HUD propio del canvas (score/nivel/vidas) usando `drawSprite`/`drawFrame` de `spritesheet.js`, overlays de game over y victoria
+   - Eliminar del port: listeners `mousemove`/`click` del paddle y del selector de nivel en pausa
    - Carga async del spritesheet (`loadSpritesheet(cb)`) antes de arrancar el loop RAF — mismo patrón que el original
    - Encapsular estado (`paddle`, `ball`, `blocks`, `explosions`, `lives`, `score`, `currentLevel`, `gameState`) en `useRef`
    - Canvas 800×600 vía `useRef<HTMLCanvasElement>`
@@ -126,7 +127,7 @@ interface ArkanoidGameProps {
 - [ ] "SALIR" navega de vuelta a `GameDetail` de Arkanoid
 - [ ] Otros juegos del catálogo (asteroides, tetris, placeholders) siguen funcionando sin cambios de comportamiento
 - [ ] Sin controles de mouse ni táctiles añadidos para este juego
-- [ ] Sin audio (sonidos de rebote/rotura no portados)
+- [ ] Rebote de pelota (pared/paddle) reproduce `ball-bounce.mp3`; destrucción de bloque reproduce `break-sound.mp3`
 
 ---
 
@@ -137,7 +138,7 @@ interface ArkanoidGameProps {
 | id/color/cat               | arkanoid / yellow / ARCADE                                                  | breakout, bloques; magenta/cyan (ya usados); PUZZLE/SHOOTER | Nombre directo; yellow no repite asteroides (magenta) ni tetris (cyan); ARCADE refleja mecánica real de rompe-bloques    |
 | Assets visuales            | Portar spritesheet original (`spritesheet-breakout.png` + `spritesheet.js`) | Recrear con formas planas (`fillRect`/`arc`)                | Usuario confirmó explícitamente: prioriza fidelidad visual al original sobre evitar el primer asset binario del proyecto |
 | Victoria (5 niveles)       | `onGameOver(finalScore)` también al completar nivel 5                       | Overlay de victoria sin disparar onGameOver                 | Usuario confirmó: reutiliza el mismo flujo de fin de partida ya existente, evita lógica extra distinguiendo win/gameover |
-| Sonido                     | Excluido de este spec                                                       | Portar `bounceSound`/`breakSound`                           | Sigue precedente de asteroides/tetris (specs 05/07): audio queda fuera de alcance                                        |
+| Sonido                     | Portar `bounceSound`/`breakSound` (`Audio().cloneNode().play()`)            | Excluir (precedente specs 05/07)                            | Usuario confirmó explícitamente durante implementación: quiere audio en Arkanoid pese al precedente de asteroides/tetris |
 | Selector de nivel en pausa | Excluido; pausa simple como el resto del sitio                              | Botones 1-5 clicables en overlay de pausa                   | Usuario confirmó: simplifica alcance, no es parte del contrato estándar de pausa/reinicio de GamePlayer                  |
 | Control de paddle          | Solo teclado (`←`/`→`)                                                      | Mouse (`mousemove`) como en el original                     | Precedente fijo de specs 05/07: solo teclado, sin mouse/táctil                                                           |
 | Integración en GamePlayer  | Componente dedicado `ArkanoidGame.tsx` por juego                            | Motor genérico reutilizable para todos los juegos           | Mismo criterio que asteroides/tetris: evita abstracción prematura sin un tercer caso que la justifique                   |
