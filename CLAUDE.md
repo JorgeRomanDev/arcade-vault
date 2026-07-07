@@ -64,6 +64,10 @@ Reference source code for ports lives in `references/started-games/`; raw art in
 - `/spec-impl <NN-slug>` (`.agents/skills/spec-impl/`) — implements a spec **only if its state means "Aprobado"/"Approved"**. Creates branch `spec-NN-slug`, implements step by step with diff-review pauses. The human flips the state to Aprobado, never the agent.
 - `/add-game` (`.claude/skills/add-game/`) — specialized `/spec` for new games: pre-wired to the 4-point integration pattern above. Produces the spec only; implementation goes through `/spec-impl`.
 
+## Agents
+
+- `game-planner` (`.claude/agents/game-planner.md`) — decides **which** new game fits the catalog (category/color/mechanic gaps, checks `references/started-games/` for available ports). Keeps memory of past suggestions in `references/suggested-games.md` so it never re-suggests. Writes no code or specs — output feeds `/add-game <id>`.
+
 ## Hooks
 
 `PostToolUse` on Write/Edit runs `.claude/hooks/format-lint.mjs`: Prettier + `eslint --fix` on every file Claude writes. Don't hand-format; the hook does it.
