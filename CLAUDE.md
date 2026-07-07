@@ -66,7 +66,7 @@ Reference source code for ports lives in `references/started-games/`; raw art in
 
 ## Agents
 
-- `game-planner` (`.claude/agents/game-planner.md`) — decides **which** new game fits the catalog (category/color/mechanic gaps, checks `references/started-games/` for available ports). Keeps memory of past suggestions in `references/suggested-games.md` so it never re-suggests. Writes no code or specs — output feeds `/add-game <id>`.
+- `game-planner` (`.claude/agents/game-planner.md`) — decides **which** new game fits the catalog (category/color/mechanic gaps, checks `references/started-games/` for available ports). Keeps memory of past suggestions in `references/game-suggestion-todo.md` so it never re-suggests. Writes no code or specs — output feeds `/add-game <id>`.
 
 ## Hooks
 
