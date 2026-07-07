@@ -7,6 +7,7 @@ import type { Route } from "@/app/components/AppShell";
 import AsteroidsGame from "@/app/components/games/AsteroidsGame";
 import TetrisGame from "@/app/components/games/TetrisGame";
 import ArkanoidGame from "@/app/components/games/ArkanoidGame";
+import SnakeGame from "@/app/components/games/SnakeGame";
 
 interface GamePlayerProps {
   id: string;
@@ -29,7 +30,8 @@ export default function GamePlayer({
   const isAsteroides = id === "asteroides";
   const isTetris = id === "tetris";
   const isArkanoid = id === "arkanoid";
-  const isCustomGame = isAsteroides || isTetris || isArkanoid;
+  const isSnake = id === "snake";
+  const isCustomGame = isAsteroides || isTetris || isArkanoid || isSnake;
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [level, setLevel] = useState(1);
@@ -147,6 +149,20 @@ export default function GamePlayer({
             />
           ) : isArkanoid ? (
             <ArkanoidGame
+              paused={paused}
+              restartSignal={restartCount}
+              onStateChange={(s) => {
+                setScore(s.score);
+                setLives(s.lives);
+                setLevel(s.level);
+              }}
+              onGameOver={(finalScore) => {
+                setScore(finalScore);
+                setOver(true);
+              }}
+            />
+          ) : isSnake ? (
+            <SnakeGame
               paused={paused}
               restartSignal={restartCount}
               onStateChange={(s) => {
