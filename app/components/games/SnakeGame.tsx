@@ -278,9 +278,10 @@ export default function SnakeGame({
   useEffect(() => {
     if (firstRestart.current) {
       firstRestart.current = false;
-      return;
+    } else {
+      gameRef.current = createGameState();
     }
-    gameRef.current = createGameState();
+    onStateChangeRef.current({ score: 0, lives: 1, level: 1 });
   }, [restartSignal]);
 
   useEffect(() => {

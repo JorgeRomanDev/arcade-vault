@@ -1,7 +1,7 @@
 ---
 spec: 09
 title: Arcade Vault — Juego Snake
-state: Aprobado
+state: Implementado
 date: 2026-07-06
 depends_on: [05-juego-asteroides, 06-tabla-juegos-leaderboard]
 objective: Crear desde cero (sin código de referencia) el juego Snake como componente React del proyecto, nueva entrada de catálogo id "snake", usando el atlas de sprites de fruta provisto en references/source-assets/snake-assets/ como arte del juego, jugable con teclado dentro de GamePlayer.
