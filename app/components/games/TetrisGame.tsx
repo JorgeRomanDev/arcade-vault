@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { SkinId } from "@/app/lib/skins";
 
 const COLS = 10;
 const ROWS = 20;
@@ -10,16 +11,75 @@ const H = ROWS * BLOCK;
 const NEXT_SIZE = 120;
 const NEXT_BLOCK = 30;
 
-const COLORS: (string | null)[] = [
-  null,
-  "#4dd0e1", // I - cyan
-  "#ffd54f", // O - yellow
-  "#ba68c8", // T - purple
-  "#81c784", // S - green
-  "#e57373", // Z - red
-  "#90caf9", // J - pale blue
-  "#ffb74d", // L - orange
-];
+// Paleta temática de Tetris. Roles:
+//   bg        — fondo del tablero y del recuadro "siguiente"
+//   grid      — líneas de la cuadrícula
+//   highlight — bisel superior de cada bloque (la pieza fantasma reutiliza el
+//               color del tetromino a baja opacidad, no necesita rol propio)
+//   pieces    — color de cada tetromino, indexado 1..7 (I,O,T,S,Z,J,L); 0 sin usar
+//   glow      — shadowBlur del bloque (0 = sin brillo)
+interface TetrisPalette {
+  bg: string;
+  grid: string;
+  highlight: string;
+  pieces: (string | null)[];
+  glow: number;
+}
+
+const SKINS: Record<SkinId, TetrisPalette> = {
+  // Arcade limpio, alto contraste, sin glow. Default de partida nueva.
+  classic: {
+    bg: "#0a0a0f",
+    grid: "rgba(255,255,255,0.08)",
+    highlight: "rgba(255,255,255,0.12)",
+    pieces: [
+      null,
+      "#4dd0e1", // I - cyan
+      "#ffd54f", // O - yellow
+      "#ba68c8", // T - purple
+      "#81c784", // S - green
+      "#e57373", // Z - red
+      "#90caf9", // J - pale blue
+      "#ffb74d", // L - orange
+    ],
+    glow: 0,
+  },
+  // Saturado, con brillo de fósforo (shadowBlur) sobre fondo casi negro.
+  neon: {
+    bg: "#04010a",
+    grid: "rgba(0,245,255,0.10)",
+    highlight: "rgba(255,255,255,0.28)",
+    pieces: [
+      null,
+      "#00f5ff", // I - cyan eléctrico
+      "#f5ff00", // O - amarillo neón
+      "#ff00d4", // T - magenta
+      "#39ff14", // S - verde lima
+      "#ff1e56", // Z - rojo neón
+      "#2979ff", // J - azul eléctrico
+      "#ff9100", // L - naranja neón
+    ],
+    glow: 14,
+  },
+  // Fósforo CRT apagado: tonos cálidos ámbar/verde desaturados, contraste suave
+  // pero cada pieza sigue siendo distinguible.
+  retro: {
+    bg: "#0d0b06",
+    grid: "rgba(255,183,77,0.10)",
+    highlight: "rgba(255,220,150,0.14)",
+    pieces: [
+      null,
+      "#7db3a0", // I - verde azulado apagado
+      "#d9b45a", // O - ámbar
+      "#b08a9f", // T - malva desaturado
+      "#8fae6a", // S - oliva
+      "#c07a5f", // Z - terracota
+      "#6f93a8", // J - azul polvoriento
+      "#cc9457", // L - ámbar anaranjado
+    ],
+    glow: 0,
+  },
+};
 
 const PIECES: number[][][] = [
   [],
@@ -212,6 +272,7 @@ function createGameState(): GameState {
 
 function drawBlock(
   ctx: CanvasRenderingContext2D,
+  pal: TetrisPalette,
   x: number,
   y: number,
   colorIndex: number,
@@ -219,18 +280,23 @@ function drawBlock(
   alpha = 1,
 ) {
   if (!colorIndex) return;
-  const color = COLORS[colorIndex];
+  const color = pal.pieces[colorIndex];
   if (!color) return;
   ctx.globalAlpha = alpha;
+  if (pal.glow > 0) {
+    ctx.shadowBlur = pal.glow;
+    ctx.shadowColor = color;
+  }
   ctx.fillStyle = color;
   ctx.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
-  ctx.fillStyle = "rgba(255,255,255,0.12)";
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = pal.highlight;
   ctx.fillRect(x * size + 1, y * size + 1, size - 2, 4);
   ctx.globalAlpha = 1;
 }
 
-function drawGrid(ctx: CanvasRenderingContext2D) {
-  ctx.strokeStyle = "rgba(255,255,255,0.08)";
+function drawGrid(ctx: CanvasRenderingContext2D, pal: TetrisPalette) {
+  ctx.strokeStyle = pal.grid;
   ctx.lineWidth = 0.5;
   for (let c = 1; c < COLS; c++) {
     ctx.beginPath();
@@ -246,13 +312,18 @@ function drawGrid(ctx: CanvasRenderingContext2D) {
   }
 }
 
-function drawGame(ctx: CanvasRenderingContext2D, g: GameState) {
-  ctx.fillStyle = "#0a0a0f";
+function drawGame(
+  ctx: CanvasRenderingContext2D,
+  g: GameState,
+  pal: TetrisPalette,
+) {
+  ctx.fillStyle = pal.bg;
   ctx.fillRect(0, 0, W, H);
-  drawGrid(ctx);
+  drawGrid(ctx, pal);
 
   for (let r = 0; r < ROWS; r++)
-    for (let c = 0; c < COLS; c++) drawBlock(ctx, c, r, g.board[r][c], BLOCK);
+    for (let c = 0; c < COLS; c++)
+      drawBlock(ctx, pal, c, r, g.board[r][c], BLOCK);
 
   const gy = ghostY(g);
   for (let r = 0; r < g.current.shape.length; r++)
@@ -260,6 +331,7 @@ function drawGame(ctx: CanvasRenderingContext2D, g: GameState) {
       if (g.current.shape[r][c])
         drawBlock(
           ctx,
+          pal,
           g.current.x + c,
           gy + r,
           g.current.shape[r][c],
@@ -271,6 +343,7 @@ function drawGame(ctx: CanvasRenderingContext2D, g: GameState) {
     for (let c = 0; c < g.current.shape[r].length; c++)
       drawBlock(
         ctx,
+        pal,
         g.current.x + c,
         g.current.y + r,
         g.current.shape[r][c],
@@ -278,15 +351,19 @@ function drawGame(ctx: CanvasRenderingContext2D, g: GameState) {
       );
 }
 
-function drawNext(ctx: CanvasRenderingContext2D, g: GameState) {
-  ctx.fillStyle = "#0a0a0f";
+function drawNext(
+  ctx: CanvasRenderingContext2D,
+  g: GameState,
+  pal: TetrisPalette,
+) {
+  ctx.fillStyle = pal.bg;
   ctx.fillRect(0, 0, NEXT_SIZE, NEXT_SIZE);
   const shape = g.next.shape;
   const offX = Math.floor((4 - shape[0].length) / 2);
   const offY = Math.floor((4 - shape.length) / 2);
   for (let r = 0; r < shape.length; r++)
     for (let c = 0; c < shape[r].length; c++)
-      drawBlock(ctx, offX + c, offY + r, shape[r][c], NEXT_BLOCK);
+      drawBlock(ctx, pal, offX + c, offY + r, shape[r][c], NEXT_BLOCK);
 }
 
 const CONTROL_CODES = [
@@ -301,6 +378,7 @@ const CONTROL_CODES = [
 export interface TetrisGameProps {
   paused: boolean;
   restartSignal: number;
+  skin: SkinId;
   onStateChange: (state: {
     score: number;
     lives: number;
@@ -312,6 +390,7 @@ export interface TetrisGameProps {
 export default function TetrisGame({
   paused,
   restartSignal,
+  skin,
   onStateChange,
   onGameOver,
 }: TetrisGameProps) {
@@ -319,9 +398,14 @@ export default function TetrisGame({
   const nextCanvasRef = useRef<HTMLCanvasElement>(null);
   const gameRef = useRef<GameState | null>(null);
   const pausedRef = useRef(paused);
+  const skinRef = useRef(skin);
   const onStateChangeRef = useRef(onStateChange);
   const onGameOverRef = useRef(onGameOver);
   const firstRestart = useRef(true);
+
+  useEffect(() => {
+    skinRef.current = skin;
+  }, [skin]);
 
   useEffect(() => {
     onStateChangeRef.current = onStateChange;
@@ -423,8 +507,9 @@ export default function TetrisGame({
         g.lastTime = null;
       }
 
-      drawGame(ctx, g);
-      drawNext(nextCtx, g);
+      const pal = SKINS[skinRef.current];
+      drawGame(ctx, g, pal);
+      drawNext(nextCtx, g, pal);
       rafId = requestAnimationFrame(loop);
     }
 

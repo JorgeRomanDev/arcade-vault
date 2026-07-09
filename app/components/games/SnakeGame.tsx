@@ -1,6 +1,59 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { SkinId } from "@/app/lib/skins";
+
+// Paleta temática de Snake. Roles:
+//   bg      — fondo del tablero
+//   grid    — líneas de la cuadrícula
+//   snake   — cuerpo de la serpiente
+//   head    — cabeza de la serpiente (acento sobre el cuerpo)
+//   text    — HUD (score / nivel) y texto del overlay GAME OVER
+//   overlay — velo oscuro del overlay de fin de partida
+//   glow    — shadowBlur de serpiente y cabeza (0 = sin brillo)
+interface SnakePalette {
+  bg: string;
+  grid: string;
+  snake: string;
+  head: string;
+  text: string;
+  overlay: string;
+  glow: number;
+}
+
+const SKINS: Record<SkinId, SnakePalette> = {
+  // Arcade limpio, alto contraste, sin glow. Default de partida nueva.
+  classic: {
+    bg: "#0a0a0f",
+    grid: "rgba(255,255,255,0.08)",
+    snake: "#2ecc71",
+    head: "#7dffb0",
+    text: "#ffffff",
+    overlay: "rgba(0,0,0,0.6)",
+    glow: 0,
+  },
+  // Saturado, con brillo de fósforo (shadowBlur) sobre fondo casi negro.
+  neon: {
+    bg: "#04010a",
+    grid: "rgba(0,245,136,0.12)",
+    snake: "#00ff88",
+    head: "#c8ffe6",
+    text: "#eafff5",
+    overlay: "rgba(2,0,8,0.65)",
+    glow: 14,
+  },
+  // Fósforo CRT apagado: verde monitor viejo desaturado, contraste suave pero
+  // siempre legible sobre el marco negro.
+  retro: {
+    bg: "#0d0b06",
+    grid: "rgba(120,179,138,0.12)",
+    snake: "#7db38a",
+    head: "#cdeac0",
+    text: "#ffe0a3",
+    overlay: "rgba(13,11,6,0.66)",
+    glow: 0,
+  },
+};
 
 const CANVAS_W = 800;
 const CANVAS_H = 600;
@@ -173,10 +226,14 @@ function step(g: GameState) {
   }
 }
 
-function drawOverlay(ctx: CanvasRenderingContext2D, message: string) {
-  ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+function drawOverlay(
+  ctx: CanvasRenderingContext2D,
+  message: string,
+  pal: SnakePalette,
+) {
+  ctx.fillStyle = pal.overlay;
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-  ctx.fillStyle = "#fff";
+  ctx.fillStyle = pal.text;
   ctx.font = "bold 48px monospace";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -187,11 +244,12 @@ function draw(
   ctx: CanvasRenderingContext2D,
   img: CanvasImageSource | null,
   g: GameState,
+  pal: SnakePalette,
 ) {
-  ctx.fillStyle = "#0a0a18";
+  ctx.fillStyle = pal.bg;
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-  ctx.strokeStyle = "rgba(0, 255, 136, 0.08)";
+  ctx.strokeStyle = pal.grid;
   ctx.lineWidth = 1;
   for (let c = 0; c <= COLS; c++) {
     ctx.beginPath();
@@ -221,12 +279,16 @@ function draw(
     );
   }
 
-  ctx.fillStyle = "#00ff88";
-  for (const seg of g.snake) {
+  ctx.shadowBlur = pal.glow;
+  g.snake.forEach((seg, i) => {
+    const isHead = i === 0;
+    ctx.fillStyle = isHead ? pal.head : pal.snake;
+    ctx.shadowColor = isHead ? pal.head : pal.snake;
     ctx.fillRect(seg.x * CELL + 1, seg.y * CELL + 1, CELL - 2, CELL - 2);
-  }
+  });
+  ctx.shadowBlur = 0;
 
-  ctx.fillStyle = "#fff";
+  ctx.fillStyle = pal.text;
   ctx.font = "bold 18px monospace";
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
@@ -234,12 +296,13 @@ function draw(
   ctx.textAlign = "center";
   ctx.fillText("Nivel: " + g.level, CANVAS_W / 2, 10);
 
-  if (g.gameState === "gameover") drawOverlay(ctx, "GAME OVER");
+  if (g.gameState === "gameover") drawOverlay(ctx, "GAME OVER", pal);
 }
 
 export interface SnakeGameProps {
   paused: boolean;
   restartSignal: number;
+  skin: SkinId;
   onStateChange: (state: {
     score: number;
     lives: number;
@@ -251,12 +314,14 @@ export interface SnakeGameProps {
 export default function SnakeGame({
   paused,
   restartSignal,
+  skin,
   onStateChange,
   onGameOver,
 }: SnakeGameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameRef = useRef<GameState | null>(null);
   const pausedRef = useRef(paused);
+  const skinRef = useRef(skin);
   const onStateChangeRef = useRef(onStateChange);
   const onGameOverRef = useRef(onGameOver);
   const fruitImgRef = useRef<HTMLImageElement | null>(null);
@@ -274,6 +339,10 @@ export default function SnakeGame({
   useEffect(() => {
     pausedRef.current = paused;
   }, [paused]);
+
+  useEffect(() => {
+    skinRef.current = skin;
+  }, [skin]);
 
   useEffect(() => {
     if (firstRestart.current) {
@@ -347,7 +416,12 @@ export default function SnakeGame({
         g.lastTime = null;
       }
 
-      draw(ctx, fruitReadyRef.current ? fruitImgRef.current : null, g);
+      draw(
+        ctx,
+        fruitReadyRef.current ? fruitImgRef.current : null,
+        g,
+        SKINS[skinRef.current],
+      );
       rafId = requestAnimationFrame(loop);
     }
 

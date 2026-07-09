@@ -46,6 +46,7 @@ Adding a game touches exactly 4 points, nothing else:
    interface <Name>GameProps {
      paused: boolean;
      restartSignal: number;
+     skin: SkinId;
      onStateChange: (state: { score: number; lives: number; level: number }) => void;
      onGameOver: (finalScore: number) => void;
    }
@@ -63,6 +64,10 @@ Reference source code for ports lives in `references/started-games/`; raw art in
 - `/spec` (`.agents/skills/spec/`) — guided spec designer. Asks questions in blocks, builds the spec section by section, saves to `specs/NN-slug.md` in `Borrador` state. Never writes code.
 - `/spec-impl <NN-slug>` (`.agents/skills/spec-impl/`) — implements a spec **only if its state means "Aprobado"/"Approved"**. Creates branch `spec-NN-slug`, implements step by step with diff-review pauses. The human flips the state to Aprobado, never the agent.
 - `/add-game` (`.claude/skills/add-game/`) — specialized `/spec` for new games: pre-wired to the 4-point integration pattern above. Produces the spec only; implementation goes through `/spec-impl`.
+
+## Agents
+
+- `game-planner` (`.claude/agents/game-planner.md`) — decides **which** new game fits the catalog (category/color/mechanic gaps, checks `references/started-games/` for available ports). Keeps memory of past suggestions in `references/game-suggestion-todo.md` so it never re-suggests. Writes no code or specs — output feeds `/add-game <id>`.
 
 ## Hooks
 

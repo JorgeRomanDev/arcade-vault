@@ -1,10 +1,59 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { SkinId } from "@/app/lib/skins";
 import spritesheetSrc from "./assets/arkanoid/spritesheet-breakout.png";
 
 const CANVAS_W = 800;
 const CANVAS_H = 600;
+
+// Paleta temática de Arkanoid. Los ladrillos, la pala y la pelota son sprites
+// del spritesheet, así que el skin actúa sobre el "marco" del juego:
+//   bg          — fondo del área de juego
+//   text        — HUD (score, nivel, contador de vidas)
+//   overlayFill — capa que oscurece la pantalla en game over / victoria
+//   overlayText — texto del overlay ("GAME OVER" / "¡COMPLETASTE EL JUEGO!")
+//   glow        — shadowBlur aplicado a pala y pelota (0 = sin brillo)
+//   glowColor   — color del halo cuando glow > 0
+interface ArkanoidPalette {
+  bg: string;
+  text: string;
+  overlayFill: string;
+  overlayText: string;
+  glow: number;
+  glowColor: string;
+}
+
+const SKINS: Record<SkinId, ArkanoidPalette> = {
+  // Arcade limpio, alto contraste, sin glow. Default de partida nueva.
+  classic: {
+    bg: "#000",
+    text: "#fff",
+    overlayFill: "rgba(0, 0, 0, 0.6)",
+    overlayText: "#fff",
+    glow: 0,
+    glowColor: "#ffffff",
+  },
+  // Saturado, con halo de fósforo sobre pala y pelota; texto cian/magenta.
+  neon: {
+    bg: "#04010a",
+    text: "#00f5ff",
+    overlayFill: "rgba(2, 0, 12, 0.68)",
+    overlayText: "#ff00d4",
+    glow: 12,
+    glowColor: "#00f5ff",
+  },
+  // Fósforo CRT apagado: fondo cálido casi negro y HUD ámbar desaturado,
+  // contraste suave pero siempre legible sobre el CRT.
+  retro: {
+    bg: "#0d0b06",
+    text: "#e8b45a",
+    overlayFill: "rgba(13, 11, 6, 0.66)",
+    overlayText: "#ffd27f",
+    glow: 0,
+    glowColor: "#e8b45a",
+  },
+};
 
 const PADDLE_SPEED = 400;
 const BLOCK_COLS = 10;
@@ -383,10 +432,14 @@ function drawSprite(
   ctx.drawImage(img, sprite.sx, sprite.sy, sprite.sw, sprite.sh, x, y, w, h);
 }
 
-function drawOverlay(ctx: CanvasRenderingContext2D, message: string) {
-  ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+function drawOverlay(
+  ctx: CanvasRenderingContext2D,
+  message: string,
+  pal: ArkanoidPalette,
+) {
+  ctx.fillStyle = pal.overlayFill;
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-  ctx.fillStyle = "#fff";
+  ctx.fillStyle = pal.overlayText;
   ctx.font = "bold 48px monospace";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -397,8 +450,9 @@ function draw(
   ctx: CanvasRenderingContext2D,
   img: CanvasImageSource,
   g: GameState,
+  pal: ArkanoidPalette,
 ) {
-  ctx.fillStyle = "#000";
+  ctx.fillStyle = pal.bg;
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
   for (const block of g.blocks) {
@@ -430,6 +484,10 @@ function draw(
     );
   }
 
+  if (pal.glow > 0) {
+    ctx.shadowBlur = pal.glow;
+    ctx.shadowColor = pal.glowColor;
+  }
   drawSprite(
     ctx,
     img,
@@ -440,9 +498,10 @@ function draw(
     g.paddle.h,
   );
   drawSprite(ctx, img, SPRITES.ball, g.ball.x, g.ball.y, g.ball.w, g.ball.h);
+  ctx.shadowBlur = 0;
 
   if (g.gameState === "playing") {
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = pal.text;
     ctx.font = "bold 18px monospace";
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
@@ -457,13 +516,14 @@ function draw(
     }
   }
 
-  if (g.gameState === "gameover") drawOverlay(ctx, "GAME OVER");
-  if (g.gameState === "win") drawOverlay(ctx, "¡COMPLETASTE EL JUEGO!");
+  if (g.gameState === "gameover") drawOverlay(ctx, "GAME OVER", pal);
+  if (g.gameState === "win") drawOverlay(ctx, "¡COMPLETASTE EL JUEGO!", pal);
 }
 
 export interface ArkanoidGameProps {
   paused: boolean;
   restartSignal: number;
+  skin: SkinId;
   onStateChange: (state: {
     score: number;
     lives: number;
@@ -475,12 +535,14 @@ export interface ArkanoidGameProps {
 export default function ArkanoidGame({
   paused,
   restartSignal,
+  skin,
   onStateChange,
   onGameOver,
 }: ArkanoidGameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameRef = useRef<GameState | null>(null);
   const pausedRef = useRef(paused);
+  const skinRef = useRef(skin);
   const onStateChangeRef = useRef(onStateChange);
   const onGameOverRef = useRef(onGameOver);
   const keysRef = useRef({ left: false, right: false });
@@ -488,6 +550,10 @@ export default function ArkanoidGame({
   const spriteReadyRef = useRef(false);
   const soundsRef = useRef<Sounds>({ bounce: null, breakBlock: null });
   const firstRestart = useRef(true);
+
+  useEffect(() => {
+    skinRef.current = skin;
+  }, [skin]);
 
   useEffect(() => {
     onStateChangeRef.current = onStateChange;
@@ -579,7 +645,12 @@ export default function ArkanoidGame({
         } else {
           g.lastTime = null;
         }
-        draw(ctx, spriteImgRef.current as HTMLImageElement, g);
+        draw(
+          ctx,
+          spriteImgRef.current as HTMLImageElement,
+          g,
+          SKINS[skinRef.current],
+        );
       }
 
       rafId = requestAnimationFrame(loop);

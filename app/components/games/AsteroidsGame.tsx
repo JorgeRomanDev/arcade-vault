@@ -1,9 +1,75 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { SkinId } from "@/app/lib/skins";
 
 const W = 800;
 const H = 600;
+
+// Paleta temática de Asteroids. Roles:
+//   bg       — fondo del canvas (marco CRT negro debajo)
+//   ship     — trazo del casco de la nave y los iconos de vida del HUD
+//   thrust   — llama del propulsor
+//   bullet   — relleno de los disparos
+//   asteroid — trazo de los asteroides
+//   particle — color base de las partículas de explosión ("r,g,b"; el alpha
+//              se calcula por vida, por eso es un triplete y no un color css)
+//   text     — texto del HUD y título del overlay
+//   textDim  — subtítulo del overlay (misma familia, menor énfasis)
+//   glow     — shadowBlur del trazo/relleno (0 = sin brillo)
+interface AsteroidsPalette {
+  bg: string;
+  ship: string;
+  thrust: string;
+  bullet: string;
+  asteroid: string;
+  particle: string;
+  text: string;
+  textDim: string;
+  glow: number;
+}
+
+const SKINS: Record<SkinId, AsteroidsPalette> = {
+  // Arcade vectorial clásico: blanco puro sobre negro, alto contraste, sin
+  // glow. Default de partida nueva.
+  classic: {
+    bg: "#000",
+    ship: "#fff",
+    thrust: "rgba(255,130,0,0.85)",
+    bullet: "#fff",
+    asteroid: "#fff",
+    particle: "255,255,255",
+    text: "#fff",
+    textDim: "rgba(255,255,255,0.65)",
+    glow: 0,
+  },
+  // Saturado con brillo de fósforo: nave cian, roca magenta, disparos amarillo
+  // neón, todo con shadowBlur sobre un fondo casi negro.
+  neon: {
+    bg: "#03010a",
+    ship: "#00f5ff",
+    thrust: "rgba(255,60,180,0.9)",
+    bullet: "#f5ff00",
+    asteroid: "#ff00d4",
+    particle: "0,245,255",
+    text: "#00f5ff",
+    textDim: "rgba(0,245,255,0.6)",
+    glow: 12,
+  },
+  // Monitor de fósforo ámbar apagado: tonos cálidos desaturados, contraste
+  // suave pero cada elemento sigue siendo legible sobre el CRT negro.
+  retro: {
+    bg: "#0a0d07",
+    ship: "#ffcf6b",
+    thrust: "rgba(255,140,50,0.85)",
+    bullet: "#fff0c0",
+    asteroid: "#c99a3f",
+    particle: "255,200,120",
+    text: "#ffcf6b",
+    textDim: "rgba(255,207,107,0.6)",
+    glow: 0,
+  },
+};
 
 const wrap = (v: number, max: number) => ((v % max) + max) % max;
 const dist = (a: { x: number; y: number }, b: { x: number; y: number }) =>
@@ -49,11 +115,15 @@ class Bullet {
     if (this.ttl <= 0) this.dead = true;
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = "#fff";
+  draw(ctx: CanvasRenderingContext2D, pal: AsteroidsPalette) {
+    ctx.save();
+    ctx.shadowBlur = pal.glow;
+    ctx.shadowColor = pal.bullet;
+    ctx.fillStyle = pal.bullet;
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
   }
 }
 
@@ -110,11 +180,13 @@ class Asteroid {
     ];
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
+  draw(ctx: CanvasRenderingContext2D, pal: AsteroidsPalette) {
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.rot);
-    ctx.strokeStyle = "#fff";
+    ctx.shadowBlur = pal.glow;
+    ctx.shadowColor = pal.asteroid;
+    ctx.strokeStyle = pal.asteroid;
     ctx.lineWidth = 1.5;
     ctx.lineJoin = "round";
     ctx.beginPath();
@@ -189,7 +261,7 @@ class Ship {
     return [new Bullet(ox, oy, this.angle)];
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
+  draw(ctx: CanvasRenderingContext2D, pal: AsteroidsPalette) {
     if (this.dead) return;
     if (this.invincible > 0 && Math.floor(this.invincible * 8) % 2 === 0)
       return;
@@ -197,7 +269,9 @@ class Ship {
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.angle);
-    ctx.strokeStyle = "#fff";
+    ctx.shadowBlur = pal.glow;
+    ctx.shadowColor = pal.ship;
+    ctx.strokeStyle = pal.ship;
     ctx.lineWidth = 1.5;
     ctx.lineJoin = "round";
 
@@ -214,7 +288,8 @@ class Ship {
       ctx.moveTo(-8, -4);
       ctx.lineTo(-8 - rand(6, 14), 0);
       ctx.lineTo(-8, 4);
-      ctx.strokeStyle = "rgba(255, 130, 0, 0.85)";
+      ctx.shadowColor = pal.thrust;
+      ctx.strokeStyle = pal.thrust;
       ctx.stroke();
     }
 
@@ -250,9 +325,9 @@ class Particle {
     if (this.ttl <= 0) this.dead = true;
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
+  draw(ctx: CanvasRenderingContext2D, pal: AsteroidsPalette) {
     const alpha = this.ttl / this.life;
-    ctx.strokeStyle = `rgba(255,255,255,${alpha.toFixed(2)})`;
+    ctx.strokeStyle = `rgba(${pal.particle},${alpha.toFixed(2)})`;
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(this.x, this.y);
@@ -390,11 +465,16 @@ function updateGame(g: GameState, input: InputState, dt: number) {
   if (g.asteroids.length === 0) nextLevel(g);
 }
 
-function drawLifeIcon(ctx: CanvasRenderingContext2D, x: number, y: number) {
+function drawLifeIcon(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  pal: AsteroidsPalette,
+) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(-Math.PI / 2);
-  ctx.strokeStyle = "#fff";
+  ctx.strokeStyle = pal.ship;
   ctx.lineWidth = 1.2;
   ctx.lineJoin = "round";
   ctx.beginPath();
@@ -407,8 +487,12 @@ function drawLifeIcon(ctx: CanvasRenderingContext2D, x: number, y: number) {
   ctx.restore();
 }
 
-function drawHUD(ctx: CanvasRenderingContext2D, g: GameState) {
-  ctx.fillStyle = "#fff";
+function drawHUD(
+  ctx: CanvasRenderingContext2D,
+  g: GameState,
+  pal: AsteroidsPalette,
+) {
+  ctx.fillStyle = pal.text;
   ctx.font = "15px monospace";
 
   ctx.textAlign = "left";
@@ -417,36 +501,41 @@ function drawHUD(ctx: CanvasRenderingContext2D, g: GameState) {
   ctx.textAlign = "center";
   ctx.fillText(`NIVEL ${g.level}`, W / 2, 26);
 
-  for (let i = 0; i < g.lives; i++) drawLifeIcon(ctx, W - 16 - i * 22, 18);
+  for (let i = 0; i < g.lives; i++) drawLifeIcon(ctx, W - 16 - i * 22, 18, pal);
 }
 
 function drawOverlay(
   ctx: CanvasRenderingContext2D,
   title: string,
   sub: string,
+  pal: AsteroidsPalette,
 ) {
   ctx.textAlign = "center";
-  ctx.fillStyle = "#fff";
+  ctx.fillStyle = pal.text;
   ctx.font = "bold 46px monospace";
   ctx.fillText(title, W / 2, H / 2 - 18);
   ctx.font = "18px monospace";
-  ctx.fillStyle = "rgba(255,255,255,0.65)";
+  ctx.fillStyle = pal.textDim;
   ctx.fillText(sub, W / 2, H / 2 + 22);
 }
 
-function drawGame(ctx: CanvasRenderingContext2D, g: GameState) {
-  ctx.fillStyle = "#000";
+function drawGame(
+  ctx: CanvasRenderingContext2D,
+  g: GameState,
+  pal: AsteroidsPalette,
+) {
+  ctx.fillStyle = pal.bg;
   ctx.fillRect(0, 0, W, H);
 
-  g.particles.forEach((p) => p.draw(ctx));
-  g.asteroids.forEach((a) => a.draw(ctx));
-  g.bullets.forEach((b) => b.draw(ctx));
-  g.ship.draw(ctx);
+  g.particles.forEach((p) => p.draw(ctx, pal));
+  g.asteroids.forEach((a) => a.draw(ctx, pal));
+  g.bullets.forEach((b) => b.draw(ctx, pal));
+  g.ship.draw(ctx, pal);
 
-  drawHUD(ctx, g);
+  drawHUD(ctx, g, pal);
 
   if (g.phase === "gameover")
-    drawOverlay(ctx, "GAME OVER", `PUNTAJE: ${g.score}`);
+    drawOverlay(ctx, "GAME OVER", `PUNTAJE: ${g.score}`, pal);
 }
 
 const CONTROL_CODES = ["ArrowLeft", "ArrowRight", "ArrowUp", "Space"];
@@ -454,6 +543,7 @@ const CONTROL_CODES = ["ArrowLeft", "ArrowRight", "ArrowUp", "Space"];
 export interface AsteroidsGameProps {
   paused: boolean;
   restartSignal: number;
+  skin: SkinId;
   onStateChange: (state: {
     score: number;
     lives: number;
@@ -465,6 +555,7 @@ export interface AsteroidsGameProps {
 export default function AsteroidsGame({
   paused,
   restartSignal,
+  skin,
   onStateChange,
   onGameOver,
 }: AsteroidsGameProps) {
@@ -472,9 +563,14 @@ export default function AsteroidsGame({
   const gameRef = useRef<GameState | null>(null);
   const inputRef = useRef<InputState>({ keys: {}, justPressed: {} });
   const pausedRef = useRef(paused);
+  const skinRef = useRef(skin);
   const onStateChangeRef = useRef(onStateChange);
   const onGameOverRef = useRef(onGameOver);
   const firstRestart = useRef(true);
+
+  useEffect(() => {
+    skinRef.current = skin;
+  }, [skin]);
 
   useEffect(() => {
     onStateChangeRef.current = onStateChange;
@@ -545,7 +641,7 @@ export default function AsteroidsGame({
         g.lastTime = null;
       }
 
-      drawGame(ctx, g);
+      drawGame(ctx, g, SKINS[skinRef.current]);
       rafId = requestAnimationFrame(loop);
     }
 

@@ -426,6 +426,26 @@ a {
   border-color: var(--ink-dim);
   box-shadow: none;
 }
+.skin-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 32px;
+  color-scheme: dark;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ink-dim) 50%),
+    linear-gradient(135deg, var(--ink-dim) 50%, transparent 50%);
+  background-position:
+    calc(100% - 16px) center,
+    calc(100% - 11px) center;
+  background-size:
+    5px 5px,
+    5px 5px;
+  background-repeat: no-repeat;
+}
+.skin-select option {
+  background: var(--panel, #0a0c1a);
+  color: var(--ink);
+}
 .btn.lg {
   padding: 16px 28px;
   font-size: 12px;

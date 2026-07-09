@@ -3,6 +3,13 @@
 import { useState, useEffect } from "react";
 import type { Game, User } from "@/app/data";
 import { getGame } from "@/app/lib/games";
+import {
+  SKIN_IDS,
+  SKIN_LABELS,
+  loadSkin,
+  saveSkin,
+  type SkinId,
+} from "@/app/lib/skins";
 import type { Route } from "@/app/components/AppShell";
 import AsteroidsGame from "@/app/components/games/AsteroidsGame";
 import TetrisGame from "@/app/components/games/TetrisGame";
@@ -41,6 +48,7 @@ export default function GamePlayer({
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [restartCount, setRestartCount] = useState(0);
+  const [skin, setSkin] = useState<SkinId>(() => loadSkin());
 
   useEffect(() => {
     getGame(id).then(setGame);
@@ -102,6 +110,22 @@ export default function GamePlayer({
           </div>
         </div>
         <div className="hud-actions">
+          <select
+            className="btn ghost skin-select"
+            aria-label="Skin"
+            value={skin}
+            onChange={(e) => {
+              const id = e.target.value as SkinId;
+              setSkin(id);
+              saveSkin(id);
+            }}
+          >
+            {SKIN_IDS.map((id) => (
+              <option key={id} value={id}>
+                {SKIN_LABELS[id]}
+              </option>
+            ))}
+          </select>
           <button className="btn yellow" onClick={() => setPaused((p) => !p)}>
             {paused ? "REANUDAR" : "PAUSA"}
           </button>
@@ -123,6 +147,7 @@ export default function GamePlayer({
             <AsteroidsGame
               paused={paused}
               restartSignal={restartCount}
+              skin={skin}
               onStateChange={(s) => {
                 setScore(s.score);
                 setLives(s.lives);
@@ -137,6 +162,7 @@ export default function GamePlayer({
             <TetrisGame
               paused={paused}
               restartSignal={restartCount}
+              skin={skin}
               onStateChange={(s) => {
                 setScore(s.score);
                 setLives(s.lives);
@@ -151,6 +177,7 @@ export default function GamePlayer({
             <ArkanoidGame
               paused={paused}
               restartSignal={restartCount}
+              skin={skin}
               onStateChange={(s) => {
                 setScore(s.score);
                 setLives(s.lives);
@@ -165,6 +192,7 @@ export default function GamePlayer({
             <SnakeGame
               paused={paused}
               restartSignal={restartCount}
+              skin={skin}
               onStateChange={(s) => {
                 setScore(s.score);
                 setLives(s.lives);
