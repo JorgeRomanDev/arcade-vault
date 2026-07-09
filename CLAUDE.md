@@ -46,6 +46,7 @@ Adding a game touches exactly 4 points, nothing else:
    interface <Name>GameProps {
      paused: boolean;
      restartSignal: number;
+     skin: SkinId;
      onStateChange: (state: { score: number; lives: number; level: number }) => void;
      onGameOver: (finalScore: number) => void;
    }

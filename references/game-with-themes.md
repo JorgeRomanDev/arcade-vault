@@ -7,9 +7,9 @@ Mantenido por el agente `skin-designer` (`.claude/agents/skin-designer.md`). Un 
 
 ## Estado por juego
 
-| Fecha | Juego (id) | Skins aplicados | Estado    |
-| ----- | ---------- | --------------- | --------- |
-| —     | asteroides | —               | Pendiente |
-| —     | tetris     | —               | Pendiente |
-| —     | arkanoid   | —               | Pendiente |
-| —     | snake      | —               | Pendiente |
+| Fecha      | Juego (id) | Skins aplicados        | Estado   |
+| ---------- | ---------- | ---------------------- | -------- |
+| 2026-07-09 | asteroides | classic / neon / retro | Completo |
+| 2026-07-09 | tetris     | classic / neon / retro | Completo |
+| 2026-07-09 | arkanoid   | classic / neon / retro | Completo |
+| 2026-07-09 | snake      | classic / neon / retro | Completo |
