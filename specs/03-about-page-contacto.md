@@ -1,7 +1,7 @@
 ---
 spec: 03
 title: Arcade Vault — About Page + Contacto con Resend
-state: Aprobado
+state: Implementado
 date: 2026-06-26
 depends_on: [01-arcade-vault-mvp, 02-home-page]
 objective: Implementar la pantalla About (misión + formulario de contacto) portando about.jsx del template, enviando el mensaje vía Resend al correo del dueño del proyecto.

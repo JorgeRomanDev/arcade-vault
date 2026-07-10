@@ -1,7 +1,7 @@
 ---
 spec: 08
 title: Arcade Vault — Juego Arkanoid
-state: Apobado
+state: Implementado
 date: 2026-07-05
 depends_on: [05-juego-asteroides, 06-tabla-juegos-leaderboard]
 objective: Portar el juego Arkanoid (canvas HTML5 puro de references/started-games/04-arkanoid) a un componente React del proyecto, como nueva entrada del catálogo con id "arkanoid", jugable con teclado dentro de GamePlayer.

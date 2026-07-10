@@ -68,6 +68,7 @@ Reference source code for ports lives in `references/started-games/`; raw art in
 ## Agents
 
 - `game-planner` (`.claude/agents/game-planner.md`) — decides **which** new game fits the catalog (category/color/mechanic gaps, checks `references/started-games/` for available ports). Keeps memory of past suggestions in `references/game-suggestion-todo.md` so it never re-suggests. Writes no code or specs — output feeds `/add-game <id>`.
+- `mobile-porter` (`.claude/agents/mobile-porter.md`) — for one newly-implemented game named by the human, adds its touch-control map (spec 10, `specs/10-controles-tactiles-movil.md`) and verifies responsive/touch behavior in-browser. Writes code directly; never touches game logic. Keeps memory in `references/mobile-ported-games.md`.
 
 ## Hooks
 
