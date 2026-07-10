@@ -15,6 +15,8 @@ import AsteroidsGame from "@/app/components/games/AsteroidsGame";
 import TetrisGame from "@/app/components/games/TetrisGame";
 import ArkanoidGame from "@/app/components/games/ArkanoidGame";
 import SnakeGame from "@/app/components/games/SnakeGame";
+import TouchControls from "@/app/components/games/TouchControls";
+import { isTouchDevice } from "@/app/lib/touch";
 
 interface GamePlayerProps {
   id: string;
@@ -49,10 +51,15 @@ export default function GamePlayer({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [restartCount, setRestartCount] = useState(0);
   const [skin, setSkin] = useState<SkinId>(() => loadSkin());
+  const [showTouch, setShowTouch] = useState(false);
 
   useEffect(() => {
     getGame(id).then(setGame);
   }, [id]);
+
+  useEffect(() => {
+    Promise.resolve().then(() => setShowTouch(isTouchDevice()));
+  }, []);
 
   useEffect(() => {
     if (isCustomGame || over || paused) return;
@@ -242,6 +249,8 @@ export default function GamePlayer({
           <span>CARGA · 1MB</span>
         </div>
       </div>
+
+      {isCustomGame && showTouch && <TouchControls gameId={id} />}
 
       {over && (
         <div className="modal-bd">

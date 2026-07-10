@@ -1151,6 +1151,7 @@ a {
 }
 .hud-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
@@ -1179,6 +1180,8 @@ a {
 .crt-screen {
   position: relative;
   aspect-ratio: 4 / 3;
+  width: min(100%, calc((100dvh - 330px) * 4 / 3));
+  margin: 0 auto;
   background: #000;
   border-radius: 12px / 28px;
   overflow: hidden;
@@ -1243,6 +1246,48 @@ a {
   border-radius: 50%;
   background: var(--green);
   box-shadow: 0 0 6px var(--green);
+}
+
+/* ===== touch controls ===== */
+.touch-controls {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+}
+.touch-pad {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+.touch-btn {
+  min-width: 56px;
+  min-height: 56px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  color: var(--cyan);
+  font-family: var(--pixel);
+  font-size: 14px;
+  border-radius: 10px;
+  user-select: none;
+  touch-action: none;
+  box-shadow: 0 0 8px rgba(0, 245, 255, 0.15);
+}
+.touch-btn:active {
+  background: var(--cyan);
+  color: #050507;
+  box-shadow: 0 0 14px rgba(0, 245, 255, 0.6);
+}
+.touch-btn-action {
+  color: var(--magenta);
+  box-shadow: 0 0 8px rgba(255, 0, 110, 0.15);
+}
+.touch-btn-action:active {
+  background: var(--magenta);
+  color: #050507;
+  box-shadow: 0 0 14px rgba(255, 0, 110, 0.6);
 }
 
 /* fake in-screen game */
@@ -1368,17 +1413,22 @@ a {
 }
 .modal .input-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin: 22px 0 12px;
 }
 .modal .input-row input {
-  flex: 1;
+  flex: 1 1 160px;
+  min-width: 0;
   height: 44px;
   padding: 0 12px;
   background: var(--bg);
   border: 1px solid var(--line);
   outline: 0;
   font-family: var(--mono);
+}
+.modal .input-row .btn {
+  flex: 1 1 auto;
 }
 .modal .input-row input:focus {
   border-color: var(--cyan);
@@ -1745,6 +1795,39 @@ a {
   }
   .av-player {
     padding: 0 16px 32px;
+  }
+  .player-hud {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+  .hud-stat .v {
+    font-size: 13px;
+  }
+  .hud-actions {
+    width: 100%;
+  }
+  .hud-actions .btn {
+    padding: 10px 12px;
+    font-size: 9px;
+    flex: 1 1 auto;
+  }
+  .hud-actions .skin-select {
+    flex: 1 1 100%;
+  }
+  .touch-pad {
+    gap: 8px;
+  }
+  .touch-btn {
+    min-width: 48px;
+    min-height: 48px;
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+}
+
+@media (pointer: coarse) {
+  .touch-controls {
+    margin-top: 14px;
   }
 }
 
