@@ -38,6 +38,10 @@ export default function AppShell() {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }
 
+  useEffect(() => {
+    document.body.dataset.route = route.name;
+  }, [route.name]);
+
   function handleLogin(u: User) {
     setUser(u);
     localStorage.setItem("av_user", JSON.stringify(u));
@@ -98,6 +102,7 @@ export default function AppShell() {
       />
       <main className="av-main">{renderScreen()}</main>
       <footer
+        className="av-footer"
         style={{
           borderTop: "1px solid var(--line)",
           padding: "20px 32px",

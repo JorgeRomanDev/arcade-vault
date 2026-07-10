@@ -1997,6 +1997,18 @@ a {
   .av-player {
     padding: 0 16px 32px;
   }
+  body[data-route="player"] .av-nav,
+  body[data-route="player"] .av-mobile-backdrop,
+  body[data-route="player"] .av-mobile-panel,
+  body[data-route="player"] .av-footer {
+    display: none;
+  }
+  body[data-route="player"] .av-player {
+    margin: 8px auto;
+  }
+  body[data-route="player"] .crt-screen {
+    width: min(100%, calc((100dvh - 260px) * 4 / 3));
+  }
   .player-hud {
     padding: 10px 12px;
     gap: 10px;

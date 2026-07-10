@@ -1,7 +1,7 @@
 ---
 spec: 11
 title: Arcade Vault — Apariencia neón del gamepad táctil
-state: Aprobado
+state: Implementado
 date: 2026-07-09
 depends_on: [10-controles-tactiles-movil]
 objective: Reemplazar la apariencia y disposición física de los controles táctiles de los 4 juegos (Snake, Tetris, Arkanoid, Asteroids) por el diseño de gamepad neón de referencia (`references/gamepad-assets/gamepad.html`) — D-pad diamante con hub central + hasta 2 botones de acción circulares A/B — remapeando cada juego a ese esquema fijo sin tocar la lógica de juego ni el mecanismo de `KeyboardEvent` sintéticos.
