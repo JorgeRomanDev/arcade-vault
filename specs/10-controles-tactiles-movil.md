@@ -1,7 +1,7 @@
 ---
 spec: 10
 title: Arcade Vault — Controles táctiles móviles
-state: Aprobado
+state: Implementado
 date: 2026-07-09
 depends_on:
   [05-juego-asteroides, 07-juego-tetris, 08-juego-arkanoid, 09-juego-snake]

@@ -1,7 +1,7 @@
 ---
 spec: 07
 title: Arcade Vault — Juego Tetris
-state: Aprobado
+state: Implementado
 date: 2026-07-05
 depends_on: [05-juego-asteroides, 06-tabla-juegos-leaderboard]
 objective: Portar Tetris (canvas HTML5 puro de references/started-games/03-tetris) a componente React del proyecto, nueva entrada de catálogo id "tetris", jugable con teclado dentro de GamePlayer.
