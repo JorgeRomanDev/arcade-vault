@@ -327,15 +327,35 @@ function createGameState(): GameState {
   return g;
 }
 
-function playSound(audio: HTMLAudioElement | null) {
-  if (!audio) return;
-  const clone = audio.cloneNode(true) as HTMLAudioElement;
-  clone.play().catch(() => {});
+const AUDIO_POOL_SIZE = 4;
+
+class AudioPool {
+  private pool: HTMLAudioElement[] = [];
+  private next = 0;
+
+  constructor(src: string) {
+    for (let i = 0; i < AUDIO_POOL_SIZE; i++) {
+      const audio = new window.Audio(src);
+      audio.preload = "auto";
+      this.pool.push(audio);
+    }
+  }
+
+  play() {
+    const audio = this.pool[this.next];
+    this.next = (this.next + 1) % this.pool.length;
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+  }
+}
+
+function playSound(pool: AudioPool | null) {
+  pool?.play();
 }
 
 interface Sounds {
-  bounce: HTMLAudioElement | null;
-  breakBlock: HTMLAudioElement | null;
+  bounce: AudioPool | null;
+  breakBlock: AudioPool | null;
 }
 
 function update(
@@ -406,8 +426,15 @@ function update(
     }
   }
 
-  for (const exp of g.explosions) exp.elapsed += dt * 1000;
-  g.explosions = g.explosions.filter((exp) => exp.elapsed < EXPLOSION_DURATION);
+  if (g.explosions.length > 0) {
+    let write = 0;
+    for (let read = 0; read < g.explosions.length; read++) {
+      const exp = g.explosions[read];
+      exp.elapsed += dt * 1000;
+      if (exp.elapsed < EXPLOSION_DURATION) g.explosions[write++] = exp;
+    }
+    g.explosions.length = write;
+  }
 
   if (ball.y > CANVAS_H) {
     g.lives--;
@@ -607,10 +634,10 @@ export default function ArkanoidGame({
     let rafId: number;
     let cancelled = false;
 
-    soundsRef.current.bounce = new window.Audio(
+    soundsRef.current.bounce = new AudioPool(
       "/sounds/arkanoid/ball-bounce.mp3",
     );
-    soundsRef.current.breakBlock = new window.Audio(
+    soundsRef.current.breakBlock = new AudioPool(
       "/sounds/arkanoid/break-sound.mp3",
     );
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Game, User } from "@/app/data";
 import { getGame } from "@/app/lib/games";
 import {
@@ -18,6 +18,11 @@ import SnakeGame from "@/app/components/games/SnakeGame";
 import FroggerGame from "@/app/components/games/FroggerGame";
 import TouchControls from "@/app/components/games/TouchControls";
 import { isTouchDevice } from "@/app/lib/touch";
+import {
+  createFpsMonitor,
+  isDebugFpsEnabled,
+  type FrameStats,
+} from "@/app/lib/perf";
 
 interface GamePlayerProps {
   id: string;
@@ -55,10 +60,28 @@ export default function GamePlayer({
   const [restartCount, setRestartCount] = useState(0);
   const [skin, setSkin] = useState<SkinId>(() => loadSkin());
   const [showTouch, setShowTouch] = useState(false);
+  const [debugFps, setDebugFps] = useState(false);
+  const [frameStats, setFrameStats] = useState<FrameStats | null>(null);
+  const fpsMonitorRef = useRef(createFpsMonitor());
 
   useEffect(() => {
     getGame(id).then(setGame);
   }, [id]);
+
+  useEffect(() => {
+    Promise.resolve().then(() => setDebugFps(isDebugFpsEnabled()));
+  }, []);
+
+  useEffect(() => {
+    if (!debugFps) return;
+    let raf: number;
+    const loop = () => {
+      setFrameStats(fpsMonitorRef.current.tick());
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [debugFps]);
 
   useEffect(() => {
     Promise.resolve().then(() => setShowTouch(isTouchDevice()));
@@ -235,6 +258,27 @@ export default function GamePlayer({
               <div className="enemy e2" />
               <div className="enemy e3" />
               <div className="player-ship" />
+            </div>
+          )}
+          {debugFps && frameStats && (
+            <div
+              className="mono"
+              style={{
+                position: "absolute",
+                top: 6,
+                left: 6,
+                zIndex: 10,
+                background: "rgba(0,0,0,0.7)",
+                color: "#0f0",
+                fontSize: 11,
+                lineHeight: 1.4,
+                padding: "4px 8px",
+                pointerEvents: "none",
+              }}
+            >
+              <div>FPS: {frameStats.fps.toFixed(1)}</div>
+              <div>FRAME: {frameStats.frameTimeMs.toFixed(1)}ms</div>
+              <div>DROPPED: {frameStats.droppedFrames}</div>
             </div>
           )}
           {paused && (

@@ -24,6 +24,7 @@ interface AsteroidsPalette {
   bullet: string;
   asteroid: string;
   particle: string;
+  particleRGB: string;
   text: string;
   textDim: string;
   glow: number;
@@ -39,6 +40,7 @@ const SKINS: Record<SkinId, AsteroidsPalette> = {
     bullet: "#fff",
     asteroid: "#fff",
     particle: "255,255,255",
+    particleRGB: "rgb(255,255,255)",
     text: "#fff",
     textDim: "rgba(255,255,255,0.65)",
     glow: 0,
@@ -52,6 +54,7 @@ const SKINS: Record<SkinId, AsteroidsPalette> = {
     bullet: "#f5ff00",
     asteroid: "#ff00d4",
     particle: "0,245,255",
+    particleRGB: "rgb(0,245,255)",
     text: "#00f5ff",
     textDim: "rgba(0,245,255,0.6)",
     glow: 12,
@@ -65,11 +68,20 @@ const SKINS: Record<SkinId, AsteroidsPalette> = {
     bullet: "#fff0c0",
     asteroid: "#c99a3f",
     particle: "255,200,120",
+    particleRGB: "rgb(255,200,120)",
     text: "#ffcf6b",
     textDim: "rgba(255,207,107,0.6)",
     glow: 0,
   },
 };
+
+function removeDead<T extends { dead: boolean }>(arr: T[]) {
+  let write = 0;
+  for (let read = 0; read < arr.length; read++) {
+    if (!arr[read].dead) arr[write++] = arr[read];
+  }
+  arr.length = write;
+}
 
 const wrap = (v: number, max: number) => ((v % max) + max) % max;
 const dist = (a: { x: number; y: number }, b: { x: number; y: number }) =>
@@ -326,13 +338,14 @@ class Particle {
   }
 
   draw(ctx: CanvasRenderingContext2D, pal: AsteroidsPalette) {
-    const alpha = this.ttl / this.life;
-    ctx.strokeStyle = `rgba(${pal.particle},${alpha.toFixed(2)})`;
+    ctx.globalAlpha = this.ttl / this.life;
+    ctx.strokeStyle = pal.particleRGB;
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(this.x, this.y);
     ctx.lineTo(this.x - this.vx * 0.05, this.y - this.vy * 0.05);
     ctx.stroke();
+    ctx.globalAlpha = 1;
   }
 }
 
@@ -410,14 +423,14 @@ function killShip(g: GameState) {
 function updateGame(g: GameState, input: InputState, dt: number) {
   if (g.phase === "gameover") {
     g.particles.forEach((p) => p.update(dt));
-    g.particles = g.particles.filter((p) => !p.dead);
+    removeDead(g.particles);
     return;
   }
 
   if (g.phase === "dead") {
     g.deadTimer -= dt;
     g.particles.forEach((p) => p.update(dt));
-    g.particles = g.particles.filter((p) => !p.dead);
+    removeDead(g.particles);
     g.asteroids.forEach((a) => a.update(dt));
     if (g.deadTimer <= 0) {
       g.phase = "playing";
@@ -435,8 +448,8 @@ function updateGame(g: GameState, input: InputState, dt: number) {
   g.asteroids.forEach((a) => a.update(dt));
   g.particles.forEach((p) => p.update(dt));
 
-  g.bullets = g.bullets.filter((b) => !b.dead);
-  g.particles = g.particles.filter((p) => !p.dead);
+  removeDead(g.bullets);
+  removeDead(g.particles);
 
   const newAsteroids: Asteroid[] = [];
   for (const b of g.bullets) {
@@ -450,8 +463,9 @@ function updateGame(g: GameState, input: InputState, dt: number) {
       }
     }
   }
-  g.asteroids = g.asteroids.filter((a) => !a.dead).concat(newAsteroids);
-  g.bullets = g.bullets.filter((b) => !b.dead);
+  removeDead(g.asteroids);
+  g.asteroids.push(...newAsteroids);
+  removeDead(g.bullets);
 
   if (g.ship.invincible <= 0) {
     for (const a of g.asteroids) {
