@@ -206,10 +206,13 @@ function step(g: GameState) {
   }
 
   const willGrow = newHead.x === g.fruit.cell.x && newHead.y === g.fruit.cell.y;
-  const bodyToCheck = willGrow ? g.snake : g.snake.slice(0, -1);
-  if (bodyToCheck.some((seg) => seg.x === newHead.x && seg.y === newHead.y)) {
-    g.gameState = "gameover";
-    return;
+  const bodyLen = willGrow ? g.snake.length : g.snake.length - 1;
+  for (let i = 0; i < bodyLen; i++) {
+    const seg = g.snake[i];
+    if (seg.x === newHead.x && seg.y === newHead.y) {
+      g.gameState = "gameover";
+      return;
+    }
   }
 
   g.snake.unshift(newHead);
