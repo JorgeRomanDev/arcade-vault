@@ -20,6 +20,12 @@ const CONTROL_MAPS: Record<string, ButtonDef[]> = {
     { role: "left", key: "ArrowLeft", code: "ArrowLeft", type: "tap" },
     { role: "right", key: "ArrowRight", code: "ArrowRight", type: "tap" },
   ],
+  frogger: [
+    { role: "up", key: "ArrowUp", code: "ArrowUp", type: "tap" },
+    { role: "down", key: "ArrowDown", code: "ArrowDown", type: "tap" },
+    { role: "left", key: "ArrowLeft", code: "ArrowLeft", type: "tap" },
+    { role: "right", key: "ArrowRight", code: "ArrowRight", type: "tap" },
+  ],
   arkanoid: [
     { role: "left", key: "ArrowLeft", code: "ArrowLeft", type: "hold" },
     { role: "right", key: "ArrowRight", code: "ArrowRight", type: "hold" },
