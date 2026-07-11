@@ -15,6 +15,7 @@ import AsteroidsGame from "@/app/components/games/AsteroidsGame";
 import TetrisGame from "@/app/components/games/TetrisGame";
 import ArkanoidGame from "@/app/components/games/ArkanoidGame";
 import SnakeGame from "@/app/components/games/SnakeGame";
+import FroggerGame from "@/app/components/games/FroggerGame";
 import TouchControls from "@/app/components/games/TouchControls";
 import { isTouchDevice } from "@/app/lib/touch";
 
@@ -40,7 +41,9 @@ export default function GamePlayer({
   const isTetris = id === "tetris";
   const isArkanoid = id === "arkanoid";
   const isSnake = id === "snake";
-  const isCustomGame = isAsteroides || isTetris || isArkanoid || isSnake;
+  const isFrogger = id === "frogger";
+  const isCustomGame =
+    isAsteroides || isTetris || isArkanoid || isSnake || isFrogger;
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [level, setLevel] = useState(1);
@@ -197,6 +200,21 @@ export default function GamePlayer({
             />
           ) : isSnake ? (
             <SnakeGame
+              paused={paused}
+              restartSignal={restartCount}
+              skin={skin}
+              onStateChange={(s) => {
+                setScore(s.score);
+                setLives(s.lives);
+                setLevel(s.level);
+              }}
+              onGameOver={(finalScore) => {
+                setScore(finalScore);
+                setOver(true);
+              }}
+            />
+          ) : isFrogger ? (
+            <FroggerGame
               paused={paused}
               restartSignal={restartCount}
               skin={skin}

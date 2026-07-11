@@ -13,3 +13,4 @@ Mantenido por el agente `skin-designer` (`.claude/agents/skin-designer.md`). Un 
 | 2026-07-09 | tetris     | classic / neon / retro | Completo |
 | 2026-07-09 | arkanoid   | classic / neon / retro | Completo |
 | 2026-07-09 | snake      | classic / neon / retro | Completo |
+| 2026-07-10 | frogger    | classic / neon / retro | Completo |

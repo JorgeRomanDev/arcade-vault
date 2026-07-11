@@ -1,6 +1,153 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { SkinId } from "@/app/lib/skins";
+
+// Paleta temática de Frogger. Roles (cubren todo color antes hardcodeado):
+//   roadBg / riverBg / safeBg — fondos de carretera, río y franjas seguras
+//   goalRowBg                 — fondo de la fila superior de metas
+//   goalPad / goalBorder      — hueco de meta y su marco
+//   goalFilled                — rana ya depositada en una meta
+//   car1 / car2 / car3        — carrocerías de los tres tipos de coche
+//   truckBody / truckCab      — remolque y cabina del camión
+//   wheel                     — ruedas de coches/camiones y pupilas
+//   log / logLine             — tronco y sus vetas
+//   turtle / turtleEdge       — caparazón de tortuga y su borde
+//   frog / frogLeg            — cuerpo y patas de la rana jugadora
+//   eyeWhite                  — esclerótica de los ojos de la rana
+//   text                      — HUD (score / nivel) y overlay GAME OVER
+//   hudBar                    — banda negra tras la barra de tiempo
+//   lives                     — iconos de vidas restantes
+//   timeGood / timeWarn / timeDanger — barra de tiempo por tramo
+//   overlay                   — velo del overlay de fin de partida
+//   glow                      — shadowBlur de rana/metas (0 = sin brillo)
+interface FroggerPalette {
+  roadBg: string;
+  riverBg: string;
+  safeBg: string;
+  goalRowBg: string;
+  goalPad: string;
+  goalBorder: string;
+  goalFilled: string;
+  car1: string;
+  car2: string;
+  car3: string;
+  truckBody: string;
+  truckCab: string;
+  wheel: string;
+  log: string;
+  logLine: string;
+  turtle: string;
+  turtleEdge: string;
+  frog: string;
+  frogLeg: string;
+  eyeWhite: string;
+  text: string;
+  hudBar: string;
+  lives: string;
+  timeGood: string;
+  timeWarn: string;
+  timeDanger: string;
+  overlay: string;
+  glow: number;
+}
+
+const SKINS: Record<SkinId, FroggerPalette> = {
+  // Arcade limpio, alto contraste, sin glow. Default de partida nueva.
+  classic: {
+    roadBg: "#0a0a0a",
+    riverBg: "#001830",
+    safeBg: "#0a1f0f",
+    goalRowBg: "#0d3a1a",
+    goalPad: "#0d5a2a",
+    goalBorder: "#f5d000",
+    goalFilled: "#00ff88",
+    car1: "#ff3b3b",
+    car2: "#f5ff00",
+    car3: "#00c8ff",
+    truckBody: "#8a8a99",
+    truckCab: "#c0c0d0",
+    wheel: "#111111",
+    log: "#7a4a20",
+    logLine: "rgba(0,0,0,0.35)",
+    turtle: "#2ecc71",
+    turtleEdge: "#145a32",
+    frog: "#39ff14",
+    frogLeg: "#39ff14",
+    eyeWhite: "#ffffff",
+    text: "#ffffff",
+    hudBar: "#000000",
+    lives: "#39ff14",
+    timeGood: "#00ff88",
+    timeWarn: "#f5ff00",
+    timeDanger: "#ff2d2d",
+    overlay: "rgba(0,0,0,0.6)",
+    glow: 0,
+  },
+  // Saturado, con brillo de fósforo (shadowBlur) sobre fondo casi negro.
+  neon: {
+    roadBg: "#050510",
+    riverBg: "#02063a",
+    safeBg: "#041a12",
+    goalRowBg: "#06251a",
+    goalPad: "#103a2e",
+    goalBorder: "#ff00d4",
+    goalFilled: "#00ffa2",
+    car1: "#ff2b6d",
+    car2: "#faff00",
+    car3: "#00e5ff",
+    truckBody: "#7a4dff",
+    truckCab: "#b28bff",
+    wheel: "#0a0012",
+    log: "#ff7b2e",
+    logLine: "rgba(0,0,0,0.4)",
+    turtle: "#00ffb3",
+    turtleEdge: "#0a6b4d",
+    frog: "#39ff14",
+    frogLeg: "#39ff14",
+    eyeWhite: "#eafff5",
+    text: "#eafff5",
+    hudBar: "#02010a",
+    lives: "#39ff14",
+    timeGood: "#00ffa2",
+    timeWarn: "#faff00",
+    timeDanger: "#ff2b6d",
+    overlay: "rgba(2,0,8,0.65)",
+    glow: 14,
+  },
+  // Fósforo CRT apagado: ámbar/verde desaturado de monitor viejo, contraste
+  // suave pero siempre legible sobre el marco negro.
+  retro: {
+    roadBg: "#0d0b06",
+    riverBg: "#0a1418",
+    safeBg: "#10130a",
+    goalRowBg: "#141a0d",
+    goalPad: "#2a3318",
+    goalBorder: "#c9a24a",
+    goalFilled: "#9fc27a",
+    car1: "#c46a4a",
+    car2: "#c9a24a",
+    car3: "#6a94a0",
+    truckBody: "#7a7566",
+    truckCab: "#a39d8a",
+    wheel: "#100d06",
+    log: "#6b4a2c",
+    logLine: "rgba(0,0,0,0.35)",
+    turtle: "#7db38a",
+    turtleEdge: "#3a5238",
+    frog: "#b7e08a",
+    frogLeg: "#b7e08a",
+    eyeWhite: "#ffe0a3",
+    text: "#ffe0a3",
+    hudBar: "#0d0b06",
+    lives: "#b7e08a",
+    timeGood: "#9fc27a",
+    timeWarn: "#d8c06a",
+    timeDanger: "#c46a4a",
+    overlay: "rgba(13,11,6,0.66)",
+    glow: 0,
+  },
+};
 
 const COLS = 16;
 const ROWS = 14;
@@ -21,10 +168,10 @@ const START_COL = Math.floor(COLS / 2);
 
 const JUMP_DURATION_MS = 120;
 
-const ROAD_MIN_SPEED = 1.5;
-const ROAD_MAX_SPEED = 4;
-const RIVER_MIN_SPEED = 1;
-const RIVER_MAX_SPEED = 3;
+const ROAD_MIN_SPEED = 0.7;
+const ROAD_MAX_SPEED = 1.8;
+const RIVER_MIN_SPEED = 0.5;
+const RIVER_MAX_SPEED = 1.3;
 const LEVEL_SPEED_MULT = 1.15;
 
 const TURTLE_VISIBLE_MS = 3000;
@@ -65,6 +212,7 @@ interface Lane {
   speed: number;
   dir: 1 | -1;
   entities: Entity[];
+  margin: number;
 }
 
 interface Frog {
@@ -111,13 +259,17 @@ function randRange(min: number, max: number) {
   return min + Math.random() * (max - min);
 }
 
+const ROAD_LANE_MARGIN = 6;
+const RIVER_LANE_MARGIN = 8;
+
 function buildRoadLane(row: number, laneIndex: number, level: number): Lane {
   const scale = speedScaleForLevel(level);
   const speed = randRange(ROAD_MIN_SPEED, ROAD_MAX_SPEED) * scale;
   const dir: 1 | -1 = laneIndex % 2 === 0 ? 1 : -1;
   const entities: Entity[] = [];
-  let col = -6;
-  while (col < COLS + 6) {
+  const margin = ROAD_LANE_MARGIN;
+  let col = -margin;
+  while (col < COLS + margin) {
     const isTruck = Math.random() < 0.35;
     const width = isTruck
       ? Math.floor(randRange(2, 4))
@@ -125,7 +277,7 @@ function buildRoadLane(row: number, laneIndex: number, level: number): Lane {
     entities.push({ col, width, type: isTruck ? "truck" : "car" });
     col += width + randRange(2.5, 5);
   }
-  return { row, speed, dir, entities };
+  return { row, speed, dir, entities, margin };
 }
 
 function buildRiverLane(row: number, laneIndex: number, level: number): Lane {
@@ -134,9 +286,10 @@ function buildRiverLane(row: number, laneIndex: number, level: number): Lane {
   const dir: 1 | -1 = laneIndex % 2 === 0 ? 1 : -1;
   const entities: Entity[] = [];
   const isTurtleLane = laneIndex % 3 === 1;
-  let col = -8;
+  const margin = RIVER_LANE_MARGIN;
+  let col = -margin;
   let i = 0;
-  while (col < COLS + 8) {
+  while (col < COLS + margin) {
     const width = isTurtleLane
       ? Math.floor(randRange(2, 4))
       : Math.floor(randRange(2, 5));
@@ -150,7 +303,7 @@ function buildRiverLane(row: number, laneIndex: number, level: number): Lane {
     col += width + randRange(2, 4);
     i += 1;
   }
-  return { row, speed, dir, entities };
+  return { row, speed, dir, entities, margin };
 }
 
 function buildLanes(level: number): Lane[] {
@@ -204,22 +357,24 @@ function goalIndexForCol(col: number): number {
 }
 
 function checkRoadCollision(frog: Frog, lanes: Lane[]): boolean {
+  const c = frog.col + 0.5;
   for (const lane of lanes) {
     if (lane.row !== frog.row) continue;
     if (lane.row < ROW_ROAD_TOP || lane.row > ROW_ROAD_BOT) continue;
     for (const e of lane.entities) {
-      if (frog.col >= e.col && frog.col < e.col + e.width) return true;
+      if (c >= e.col && c < e.col + e.width) return true;
     }
   }
   return false;
 }
 
 function getSupport(frog: Frog, lanes: Lane[]): Entity | null {
+  const c = frog.col + 0.5;
   for (const lane of lanes) {
     if (lane.row !== frog.row) continue;
     if (lane.row < ROW_RIVER_TOP || lane.row > ROW_RIVER_BOT) continue;
     for (const e of lane.entities) {
-      if (frog.col >= e.col && frog.col < e.col + e.width) {
+      if (c >= e.col && c < e.col + e.width) {
         if (e.type === "turtle" && e.submerged) return null;
         return e;
       }
@@ -299,12 +454,13 @@ function resolveLanding(g: GameState) {
 
 function updateEntities(lanes: Lane[], dt: number) {
   for (const lane of lanes) {
+    const cycle = COLS + 2 * lane.margin;
     for (const e of lane.entities) {
-      e.col += (lane.speed * lane.dir * dt) / 16;
-      if (lane.dir === 1 && e.col > COLS) {
-        e.col = -e.width;
-      } else if (lane.dir === -1 && e.col + e.width < 0) {
-        e.col = COLS;
+      e.col += (lane.speed * lane.dir * dt) / 16 / CELL;
+      if (lane.dir === 1 && e.col > COLS + lane.margin) {
+        e.col -= cycle;
+      } else if (lane.dir === -1 && e.col + e.width < -lane.margin) {
+        e.col += cycle;
       }
       if (e.type === "turtle") {
         e.cycleOffset = ((e.cycleOffset ?? 0) + dt) % TURTLE_CYCLE_MS;
@@ -360,8 +516,8 @@ function update(g: GameState, dt: number) {
       if (g.phase === "playing") killFrog(g);
     } else {
       const lane = g.lanes.find((l) => l.row === frog.row)!;
-      frog.col += (lane.speed * lane.dir * dt) / 16;
-      if (frog.col < 0 || frog.col >= COLS) {
+      frog.col += (lane.speed * lane.dir * dt) / 16 / CELL;
+      if (frog.col + 0.5 < 0 || frog.col + 0.5 >= COLS) {
         killFrog(g);
       }
     }
@@ -376,13 +532,18 @@ function update(g: GameState, dt: number) {
   }
 }
 
-function timeBarColor(ratio: number) {
-  if (ratio > 0.5) return "#00ff88";
-  if (ratio > 0.2) return "#f5ff00";
-  return "#ff2d2d";
+function timeBarColor(ratio: number, pal: FroggerPalette) {
+  if (ratio > 0.5) return pal.timeGood;
+  if (ratio > 0.2) return pal.timeWarn;
+  return pal.timeDanger;
 }
 
-function drawEntity(ctx: CanvasRenderingContext2D, row: number, e: Entity) {
+function drawEntity(
+  ctx: CanvasRenderingContext2D,
+  row: number,
+  e: Entity,
+  pal: FroggerPalette,
+) {
   const x = e.col * CELL;
   const y = row * CELL;
   const w = e.width * CELL;
@@ -390,27 +551,27 @@ function drawEntity(ctx: CanvasRenderingContext2D, row: number, e: Entity) {
 
   if (e.type === "car") {
     const colorIdx = ((Math.floor(e.col) % 3) + 3) % 3;
-    ctx.fillStyle = ["#ff3b3b", "#f5ff00", "#00c8ff"][colorIdx];
+    ctx.fillStyle = [pal.car1, pal.car2, pal.car3][colorIdx];
     ctx.fillRect(x + 3, y + 6, w - 6, h - 12);
-    ctx.fillStyle = "#111";
+    ctx.fillStyle = pal.wheel;
     ctx.beginPath();
     ctx.arc(x + 10, y + h - 8, 5, 0, Math.PI * 2);
     ctx.arc(x + w - 10, y + h - 8, 5, 0, Math.PI * 2);
     ctx.fill();
   } else if (e.type === "truck") {
-    ctx.fillStyle = "#8a8a99";
+    ctx.fillStyle = pal.truckBody;
     ctx.fillRect(x + 2, y + 5, w - 4, h - 10);
-    ctx.fillStyle = "#c0c0d0";
+    ctx.fillStyle = pal.truckCab;
     ctx.fillRect(x + 2, y + 5, CELL - 8, h - 10);
-    ctx.fillStyle = "#111";
+    ctx.fillStyle = pal.wheel;
     ctx.beginPath();
     ctx.arc(x + 10, y + h - 6, 5, 0, Math.PI * 2);
     ctx.arc(x + w - 10, y + h - 6, 5, 0, Math.PI * 2);
     ctx.fill();
   } else if (e.type === "log") {
-    ctx.fillStyle = "#7a4a20";
+    ctx.fillStyle = pal.log;
     ctx.fillRect(x + 1, y + 8, w - 2, h - 16);
-    ctx.strokeStyle = "rgba(0,0,0,0.35)";
+    ctx.strokeStyle = pal.logLine;
     ctx.lineWidth = 2;
     for (let i = 1; i < e.width; i++) {
       ctx.beginPath();
@@ -421,11 +582,11 @@ function drawEntity(ctx: CanvasRenderingContext2D, row: number, e: Entity) {
   } else if (e.type === "turtle") {
     ctx.globalAlpha = e.submerged ? 0.3 : 1;
     for (let i = 0; i < e.width; i++) {
-      ctx.fillStyle = "#2ecc71";
+      ctx.fillStyle = pal.turtle;
       ctx.beginPath();
       ctx.arc(x + i * CELL + CELL / 2, y + h / 2, CELL / 2 - 5, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = "#145a32";
+      ctx.strokeStyle = pal.turtleEdge;
       ctx.lineWidth = 1.5;
       ctx.stroke();
     }
@@ -433,16 +594,20 @@ function drawEntity(ctx: CanvasRenderingContext2D, row: number, e: Entity) {
   }
 }
 
-function rowBackground(row: number): string {
-  if (row === ROW_GOALS) return "#0d3a1a";
-  if (row >= ROW_RIVER_TOP && row <= ROW_RIVER_BOT) return "#001830";
-  if (row === ROW_SAFE_MID || row === ROW_START) return "#0a1f0f";
-  return "#0a0a0a";
+function rowBackground(row: number, pal: FroggerPalette): string {
+  if (row === ROW_GOALS) return pal.goalRowBg;
+  if (row >= ROW_RIVER_TOP && row <= ROW_RIVER_BOT) return pal.riverBg;
+  if (row === ROW_SAFE_MID || row === ROW_START) return pal.safeBg;
+  return pal.roadBg;
 }
 
-function draw(ctx: CanvasRenderingContext2D, g: GameState) {
+function draw(
+  ctx: CanvasRenderingContext2D,
+  g: GameState,
+  pal: FroggerPalette,
+) {
   for (let row = 0; row < ROWS; row++) {
-    ctx.fillStyle = rowBackground(row);
+    ctx.fillStyle = rowBackground(row, pal);
     ctx.fillRect(0, row * CELL, CANVAS_W, CELL);
   }
 
@@ -450,22 +615,25 @@ function draw(ctx: CanvasRenderingContext2D, g: GameState) {
     const x = goal.start * CELL;
     const w = (goal.end - goal.start + 1) * CELL;
     const idx = GOALS.indexOf(goal);
-    ctx.fillStyle = "#0d5a2a";
+    ctx.fillStyle = pal.goalPad;
     ctx.fillRect(x, 0, w, CELL);
-    ctx.strokeStyle = "#f5d000";
+    ctx.strokeStyle = pal.goalBorder;
     ctx.lineWidth = 2;
     ctx.strokeRect(x + 2, 2, w - 4, CELL - 4);
     if (g.goalsOccupied[idx]) {
-      ctx.fillStyle = "#00ff88";
+      ctx.shadowBlur = pal.glow;
+      ctx.shadowColor = pal.goalFilled;
+      ctx.fillStyle = pal.goalFilled;
       ctx.beginPath();
       ctx.ellipse(x + w / 2, CELL / 2, 12, 10, 0, 0, Math.PI * 2);
       ctx.fill();
+      ctx.shadowBlur = 0;
     }
   }
 
   for (const lane of g.lanes) {
     for (const e of lane.entities) {
-      drawEntity(ctx, lane.row, e);
+      drawEntity(ctx, lane.row, e, pal);
     }
   }
 
@@ -482,12 +650,14 @@ function draw(ctx: CanvasRenderingContext2D, g: GameState) {
   const jumpLift = frog.animating
     ? Math.sin(Math.min(1, frog.animT / JUMP_DURATION_MS) * Math.PI) * 6
     : 0;
-  ctx.fillStyle = "#39ff14";
+  ctx.shadowBlur = pal.glow;
+  ctx.shadowColor = pal.frog;
+  ctx.fillStyle = pal.frog;
   ctx.beginPath();
   ctx.ellipse(fx, fy - jumpLift, 14, 12, 0, 0, Math.PI * 2);
   ctx.fill();
   if (frog.animating) {
-    ctx.strokeStyle = "#39ff14";
+    ctx.strokeStyle = pal.frogLeg;
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(fx - 16, fy - jumpLift);
@@ -496,24 +666,25 @@ function draw(ctx: CanvasRenderingContext2D, g: GameState) {
     ctx.lineTo(fx + 22, fy - jumpLift + 6);
     ctx.stroke();
   }
-  ctx.fillStyle = "#fff";
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = pal.eyeWhite;
   ctx.beginPath();
   ctx.arc(fx - 6, fy - jumpLift - 6, 3.5, 0, Math.PI * 2);
   ctx.arc(fx + 6, fy - jumpLift - 6, 3.5, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = "#111";
+  ctx.fillStyle = pal.wheel;
   ctx.beginPath();
   ctx.arc(fx - 6, fy - jumpLift - 6, 1.6, 0, Math.PI * 2);
   ctx.arc(fx + 6, fy - jumpLift - 6, 1.6, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = "#000";
+  ctx.fillStyle = pal.hudBar;
   ctx.fillRect(0, 0, CANVAS_W, CELL / 2);
   const ratio = g.roundTimeMax > 0 ? g.roundTimeMs / g.roundTimeMax : 0;
-  ctx.fillStyle = timeBarColor(ratio);
+  ctx.fillStyle = timeBarColor(ratio, pal);
   ctx.fillRect(0, 0, CANVAS_W * Math.max(0, ratio), 6);
 
-  ctx.fillStyle = "#fff";
+  ctx.fillStyle = pal.text;
   ctx.font = "bold 16px monospace";
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
@@ -522,16 +693,16 @@ function draw(ctx: CanvasRenderingContext2D, g: GameState) {
   ctx.fillText("Nivel: " + g.level, CANVAS_W / 2, 10);
   ctx.textAlign = "right";
   for (let i = 0; i < g.lives; i++) {
-    ctx.fillStyle = "#39ff14";
+    ctx.fillStyle = pal.lives;
     ctx.beginPath();
     ctx.ellipse(CANVAS_W - 14 - i * 22, 16, 7, 6, 0, 0, Math.PI * 2);
     ctx.fill();
   }
 
   if (g.phase === "gameover") {
-    ctx.fillStyle = "rgba(0,0,0,0.6)";
+    ctx.fillStyle = pal.overlay;
     ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = pal.text;
     ctx.font = "bold 40px monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -541,45 +712,62 @@ function draw(ctx: CanvasRenderingContext2D, g: GameState) {
 
 export interface FroggerGameProps {
   paused: boolean;
-  onScoreChange: (score: number) => void;
-  onLivesChange: (lives: number) => void;
-  onLevelChange: (level: number) => void;
+  restartSignal: number;
+  skin: SkinId;
+  onStateChange: (state: {
+    score: number;
+    lives: number;
+    level: number;
+  }) => void;
   onGameOver: (finalScore: number) => void;
 }
 
 export default function FroggerGame({
   paused,
-  onScoreChange,
-  onLivesChange,
-  onLevelChange,
+  restartSignal,
+  skin,
+  onStateChange,
   onGameOver,
 }: FroggerGameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameRef = useRef<GameState | null>(null);
   const pausedRef = useRef(paused);
-  const onScoreChangeRef = useRef(onScoreChange);
-  const onLivesChangeRef = useRef(onLivesChange);
-  const onLevelChangeRef = useRef(onLevelChange);
+  const skinRef = useRef(skin);
+  const onStateChangeRef = useRef(onStateChange);
   const onGameOverRef = useRef(onGameOver);
   const lastScoreRef = useRef(0);
   const lastLivesRef = useRef(INITIAL_LIVES);
   const lastLevelRef = useRef(1);
+  const firstRestart = useRef(true);
 
   useEffect(() => {
     pausedRef.current = paused;
   }, [paused]);
   useEffect(() => {
-    onScoreChangeRef.current = onScoreChange;
-  }, [onScoreChange]);
+    skinRef.current = skin;
+  }, [skin]);
   useEffect(() => {
-    onLivesChangeRef.current = onLivesChange;
-  }, [onLivesChange]);
-  useEffect(() => {
-    onLevelChangeRef.current = onLevelChange;
-  }, [onLevelChange]);
+    onStateChangeRef.current = onStateChange;
+  }, [onStateChange]);
   useEffect(() => {
     onGameOverRef.current = onGameOver;
   }, [onGameOver]);
+
+  useEffect(() => {
+    if (firstRestart.current) {
+      firstRestart.current = false;
+    } else {
+      gameRef.current = createGameState();
+      lastScoreRef.current = 0;
+      lastLivesRef.current = INITIAL_LIVES;
+      lastLevelRef.current = 1;
+    }
+    onStateChangeRef.current({
+      score: 0,
+      lives: INITIAL_LIVES,
+      level: 1,
+    });
+  }, [restartSignal]);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -618,17 +806,19 @@ export default function FroggerGame({
         g.lastTime = ts;
         update(g, Math.min(dt, 100));
 
-        if (g.score !== lastScoreRef.current) {
+        if (
+          g.score !== lastScoreRef.current ||
+          g.lives !== lastLivesRef.current ||
+          g.level !== lastLevelRef.current
+        ) {
           lastScoreRef.current = g.score;
-          onScoreChangeRef.current(g.score);
-        }
-        if (g.lives !== lastLivesRef.current) {
           lastLivesRef.current = g.lives;
-          onLivesChangeRef.current(g.lives);
-        }
-        if (g.level !== lastLevelRef.current) {
           lastLevelRef.current = g.level;
-          onLevelChangeRef.current(g.level);
+          onStateChangeRef.current({
+            score: g.score,
+            lives: g.lives,
+            level: g.level,
+          });
         }
         if (g.phase === "gameover" && !g.gameOverFired) {
           g.gameOverFired = true;
@@ -638,7 +828,7 @@ export default function FroggerGame({
         g.lastTime = null;
       }
 
-      draw(ctx, g);
+      draw(ctx, g, SKINS[skinRef.current]);
       rafId = requestAnimationFrame(loop);
     }
 
