@@ -551,7 +551,8 @@ function drawEntity(
 
   if (e.type === "car") {
     const colorIdx = ((Math.floor(e.col) % 3) + 3) % 3;
-    ctx.fillStyle = [pal.car1, pal.car2, pal.car3][colorIdx];
+    ctx.fillStyle =
+      colorIdx === 0 ? pal.car1 : colorIdx === 1 ? pal.car2 : pal.car3;
     ctx.fillRect(x + 3, y + 6, w - 6, h - 12);
     ctx.fillStyle = pal.wheel;
     ctx.beginPath();

@@ -69,7 +69,7 @@ export default function GamePlayer({
   }, [id]);
 
   useEffect(() => {
-    setDebugFps(isDebugFpsEnabled());
+    Promise.resolve().then(() => setDebugFps(isDebugFpsEnabled()));
   }, []);
 
   useEffect(() => {
