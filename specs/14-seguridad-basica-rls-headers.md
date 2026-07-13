@@ -1,7 +1,7 @@
 ---
 spec: 14
 title: Arcade Vault — Seguridad básica (RLS, headers, hardening Supabase Auth)
-state: Aprobado
+state: Implementado
 date: 2026-07-12
 depends_on:
   [04-instalacion-supabase, 06-tabla-juegos-leaderboard, 13-auth-supabase]
@@ -131,18 +131,18 @@ const PASSWORD_ERROR =
 
 ## Criterios de aceptación
 
-- [ ] RLS habilitado en `games` y `scores` (`get_advisors` ya no reporta `rls_disabled_in_public` para ninguna de las dos).
-- [ ] Policy `games_select_public`: lectura de `games` funciona sin sesión (Library/HallOfFame/GameDetail cargan el catálogo igual que hoy).
-- [ ] No existe ninguna policy de INSERT/UPDATE/DELETE en `games` — intentar insertar/editar una fila vía anon key falla.
-- [ ] Policy `scores_select_public`: leaderboards (GameDetail, HallOfFame tabs por juego y "TODOS") siguen mostrando datos reales sin sesión.
-- [ ] Policy `scores_insert_public`: guardar score funciona tanto logueado como en modo invitado (sin regresión de spec 06/13).
-- [ ] No existe ninguna policy de UPDATE/DELETE en `scores` — intentar editar/borrar un score vía anon key falla.
-- [ ] `next.config.ts` responde con `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin` en todas las rutas (verificable con `curl -I` o Network tab).
-- [ ] `npm run dev`, `npm run build` y `npm run lint` sin errores tras los cambios.
-- [ ] Sección Riesgos de este spec documenta los 2 pasos manuales pendientes en el dashboard de Supabase Auth (leaked password protection, signup rate limit por IP), con su ubicación exacta en el dashboard.
-- [ ] Signup con password que no cumple (mínimo 8, mayúscula, minúscula, dígito, símbolo) → error inline visible, `supabase.auth.signUp()` no se llega a invocar.
-- [ ] Signup con password válido → flujo normal sin regresión (estado "revisa tu correo" o login directo).
-- [ ] Tab de login no aplica esta validación (credenciales existentes no se ven bloqueadas).
+- [x] RLS habilitado en `games` y `scores` (`get_advisors` ya no reporta `rls_disabled_in_public` para ninguna de las dos).
+- [x] Policy `games_select_public`: lectura de `games` funciona sin sesión (Library/HallOfFame/GameDetail cargan el catálogo igual que hoy).
+- [x] No existe ninguna policy de INSERT/UPDATE/DELETE en `games` — intentar insertar/editar una fila vía anon key falla.
+- [x] Policy `scores_select_public`: leaderboards (GameDetail, HallOfFame tabs por juego y "TODOS") siguen mostrando datos reales sin sesión.
+- [x] Policy `scores_insert_public`: guardar score funciona tanto logueado como en modo invitado (sin regresión de spec 06/13).
+- [x] No existe ninguna policy de UPDATE/DELETE en `scores` — intentar editar/borrar un score vía anon key falla.
+- [x] `next.config.ts` responde con `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin` en todas las rutas (verificable con `curl -I` o Network tab).
+- [x] `npm run dev`, `npm run build` y `npm run lint` sin errores tras los cambios.
+- [x] Sección Riesgos de este spec documenta los 2 pasos manuales pendientes en el dashboard de Supabase Auth (leaked password protection, signup rate limit por IP), con su ubicación exacta en el dashboard.
+- [x] Signup con password que no cumple (mínimo 8, mayúscula, minúscula, dígito, símbolo) → error inline visible, `supabase.auth.signUp()` no se llega a invocar.
+- [x] Signup con password válido → flujo normal sin regresión (estado "revisa tu correo" o login directo).
+- [x] Tab de login no aplica esta validación (credenciales existentes no se ven bloqueadas).
 
 ---
 
@@ -173,4 +173,4 @@ const PASSWORD_ERROR =
   2. **Max signup rate por IP** — Dashboard → Authentication → Rate Limits → configurar límite de signups por IP.
      Hasta que el dueño los aplique, esos 2 hallazgos del checklist siguen abiertos aunque el resto del spec esté implementado.
 - **Regex de password desincronizado con la política real del dashboard**: si el dueño cambia la política en Supabase (ej. sube el mínimo a 10, quita el requisito de símbolo) sin actualizar `PASSWORD_REGEX` en `Auth.tsx`, el cliente validará contra reglas desactualizadas — falsos positivos o negativos hasta que se actualice el código a mano.
-- **Hallazgos `SECURITY DEFINER` no cubiertos**: `anon_security_definer_function_executable` / `authenticated_security_definer_function_executable` sobre `rls_auto_enable()` quedan sin resolver — no estaban en el checklist con checkbox; riesgo aceptado explícitamente, documentado para spec futuro si se decide abordarlo.
+- **Hallazgos `SECURITY DEFINER` resueltos (fuera del checklist original, pedido explícito post-implementación)**: `anon_security_definer_function_executable` / `authenticated_security_definer_function_executable` sobre `rls_auto_enable()` se corrigieron revocando `EXECUTE` a `public`/`anon`/`authenticated` (migración `revoke_execute_rls_auto_enable`). El event trigger `ensure_rls` que invoca la función sigue activo — la revocación no afecta su disparo, solo bloquea la llamada directa vía `/rest/v1/rpc/rls_auto_enable`. Verificado con `get_advisors` (ambos hallazgos ya no aparecen).
