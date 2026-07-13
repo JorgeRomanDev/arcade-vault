@@ -32,7 +32,7 @@ Env vars live in `.env.local` (see `.env.local.example` / `.env.template`).
 Arcade Vault is a retro-arcade game platform. Single Next.js page (`app/page.tsx`) renders `AppShell`, which routes client-side between screens in `app/components/screens/`: `Home`, `Library`, `GameDetail`, `GamePlayer`, `HallOfFame`, `About`, `Auth`.
 
 - **Data layer**: tables `games` and `scores` in Supabase (spec 06). Catalog, detail views and leaderboards are data-driven — they read from Supabase via `app/lib/games.ts`. No mock data remains.
-- **Games**: canvas components in `app/components/games/` (`AsteroidsGame`, `TetrisGame`, `ArkanoidGame`, `SnakeGame`). Game assets (sprites) live next to the component under `assets/`.
+- **Games**: canvas components in `app/components/games/` (`AsteroidsGame`, `TetrisGame`, `ArkanoidGame`, `SnakeGame`, `FroggerGame`). Game assets (sprites) live next to the component under `assets/`. `TouchControls.tsx` is the shared touch-control layer (specs 10–11).
 - **API routes**: `app/api/contact/` (contact form via Resend), `app/api/supabase-check/`.
 
 ### Game integration pattern (specs 05 + 06 — normative)
@@ -64,12 +64,17 @@ Reference source code for ports lives in `references/started-games/`; raw art in
 - `/spec` (`.agents/skills/spec/`) — guided spec designer. Asks questions in blocks, builds the spec section by section, saves to `specs/NN-slug.md` in `Borrador` state. Never writes code.
 - `/spec-impl <NN-slug>` (`.agents/skills/spec-impl/`) — implements a spec **only if its state means "Aprobado"/"Approved"**. Creates branch `spec-NN-slug`, implements step by step with diff-review pauses. The human flips the state to Aprobado, never the agent.
 - `/add-game` (`.claude/skills/add-game/`) — specialized `/spec` for new games: pre-wired to the 4-point integration pattern above. Produces the spec only; implementation goes through `/spec-impl`.
+- `/spec-impl-game` (`.claude/skills/spec-impl-game/`) — implements an approved game spec via `/spec-impl`, then chains `skin-designer` → `mobile-porter` (in sequence) on the newly-implemented game.
 
 ## Agents
 
-- `game-planner` (`.claude/agents/game-planner.md`) — decides **which** new game fits the catalog (category/color/mechanic gaps, checks `references/started-games/` for available ports). Keeps memory of past suggestions in `references/game-suggestion-todo.md` so it never re-suggests. Writes no code or specs — output feeds `/add-game <id>`.
-- `mobile-porter` (`.claude/agents/mobile-porter.md`) — for one newly-implemented game named by the human, adds its touch-control map (spec 10, `specs/10-controles-tactiles-movil.md`) and verifies responsive/touch behavior in-browser. Writes code directly; never touches game logic. Keeps memory in `references/mobile-ported-games.md`.
-- `game-performance-booster` (`.claude/agents/game-performance-booster.md`) — for one game named by the human, profiles it with `?debug=fps` in-browser and applies the perf fixes normative from spec 12 (`specs/12-performance-juegos.md`): in-place array compaction, `AudioPool`, precomputed particle colors, bounded collision loops. Writes code directly; never changes game rules. Keeps memory in `references/perf-optimized-games.md`.
+One line each — see the linked file for full behavior.
+
+- `game-planner` (`.claude/agents/game-planner.md`) — decides which new game fits the catalog; output feeds `/add-game`.
+- `game-jam` (`.claude/agents/game-jam.md`) — given a game name, generates 2-3 alternative specs in `specs/game-jam/<id>/` to compare and choose.
+- `mobile-porter` (`.claude/agents/mobile-porter.md`) — adds touch controls (spec 10) to one already-implemented game.
+- `skin-designer` (`.claude/agents/skin-designer.md`) — applies the 3-skin system (classic/neon/retro) to one game.
+- `game-performance-booster` (`.claude/agents/game-performance-booster.md`) — audits and fixes performance on one game per spec 12.
 
 ## Hooks
 
@@ -86,4 +91,4 @@ Workflow, in order:
 
 Spec states: `Borrador` → `Aprobado` → `Implementado` (also `En revisión`, `Obsoleto`). Specs are written in Spanish.
 
-Implemented so far (specs 01–09): MVP shell, Home, About + contact, Supabase setup, Asteroids, games/scores tables + leaderboard, Tetris, Arkanoid, Snake.
+Implemented so far (specs 01–11): MVP shell, Home, About + contact, Supabase setup, Asteroids, games/scores tables + leaderboard, Tetris, Arkanoid, Snake, touch controls, neon gamepad look. Frogger was added via the `game-jam` agent (`specs/game-jam/frogger/`), not a numbered spec. Spec 12 (game performance) is `Aprobado`, not yet implemented.
