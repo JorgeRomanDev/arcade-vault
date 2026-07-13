@@ -1,7 +1,7 @@
 ---
 spec: 13
 title: Arcade Vault — Autenticación real con Supabase Auth (registro, login, OAuth)
-state: Aprobado
+state: Implementado
 date: 2026-07-12
 depends_on: [04-instalacion-supabase]
 objective: Reemplazar el login/registro simulado (Auth.tsx local, User en localStorage) por Supabase Auth real con email/password y OAuth Google/GitHub, incluyendo confirmación de email, sesión persistida server-side vía middleware, y logout real, manteniendo el modo invitado sin cuenta.
