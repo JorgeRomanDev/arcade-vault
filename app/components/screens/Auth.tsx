@@ -10,6 +10,12 @@ interface AuthProps {
   onLogin: (user: User) => void;
 }
 
+const PASSWORD_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
+const PASSWORD_ERROR =
+  "La contraseña debe tener mínimo 8 caracteres e incluir mayúscula, minúscula, número y símbolo.";
+
 function deriveUser(supaUser: {
   user_metadata?: { username?: string };
   email?: string;
@@ -48,6 +54,12 @@ export default function Auth({ navigate, onLogin }: AuthProps) {
         onLogin(deriveUser(data.user));
         navigate({ name: "games" });
       }
+      return;
+    }
+
+    if (!PASSWORD_REGEX.test(pass)) {
+      setError(PASSWORD_ERROR);
+      setBusy(false);
       return;
     }
 
