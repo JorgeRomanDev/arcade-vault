@@ -75,6 +75,7 @@ One line each — see the linked file for full behavior.
 - `mobile-porter` (`.claude/agents/mobile-porter.md`) — adds touch controls (spec 10) to one already-implemented game.
 - `skin-designer` (`.claude/agents/skin-designer.md`) — applies the 3-skin system (classic/neon/retro) to one game.
 - `game-performance-booster` (`.claude/agents/game-performance-booster.md`) — audits and fixes performance on one game per spec 12.
+- `security-auditor` (`.claude/agents/security-auditor.md`) — read-only audit of DB (RLS, advisors, SECURITY DEFINER) and app (headers, proxy, API routes) security; reports prioritized findings, never fixes. Memory in `references/security/security-audit-log.md`.
 
 ## Hooks
 
