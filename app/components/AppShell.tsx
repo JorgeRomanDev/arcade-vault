@@ -11,10 +11,22 @@ import Home from "./screens/Home";
 import About from "./screens/About";
 import type { User } from "@/app/data";
 import { saveScore } from "@/app/lib/games";
+import { createClient } from "@/app/lib/supabase/client";
 
 export interface Route {
   name: string;
   id?: string;
+}
+
+function deriveUser(supaUser: {
+  user_metadata?: { username?: string };
+  email?: string;
+}): User {
+  const username = supaUser.user_metadata?.username;
+  const name = (username || supaUser.email?.split("@")[0] || "PLAYER1")
+    .toUpperCase()
+    .slice(0, 10);
+  return { name, email: supaUser.email };
 }
 
 export default function AppShell() {
@@ -22,15 +34,34 @@ export default function AppShell() {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    (() => {
+    const supabase = createClient();
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser(deriveUser(session.user));
+        return;
+      }
       try {
-        setUser(
-          JSON.parse(localStorage.getItem("av_user") || "null") as User | null,
-        );
+        const guest = JSON.parse(
+          localStorage.getItem("av_guest_user") || "null",
+        ) as User | null;
+        if (guest?.isGuest) setUser(guest);
       } catch {
         /* ignore */
       }
-    })();
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser(deriveUser(session.user));
+      } else {
+        setUser((current) => (current?.isGuest ? current : null));
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   function navigate(next: Route) {
@@ -44,12 +75,18 @@ export default function AppShell() {
 
   function handleLogin(u: User) {
     setUser(u);
-    localStorage.setItem("av_user", JSON.stringify(u));
+    if (u.isGuest) {
+      localStorage.setItem("av_guest_user", JSON.stringify(u));
+    }
   }
 
-  function handleSignOut() {
+  async function handleSignOut() {
+    if (!user?.isGuest) {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    }
+    localStorage.removeItem("av_guest_user");
     setUser(null);
-    localStorage.removeItem("av_user");
   }
 
   async function handleSaveScore(entry: {
