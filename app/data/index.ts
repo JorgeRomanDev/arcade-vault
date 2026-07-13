@@ -17,6 +17,8 @@ export interface ScoreRow {
 
 export interface User {
   name: string;
+  email?: string;
+  isGuest?: boolean;
 }
 
 export const CATS: string[] = [
